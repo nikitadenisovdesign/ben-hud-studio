@@ -510,13 +510,17 @@ function draw(alphaOnly,layerFilter){
 
   // ===== HP / VITALS BAR =====
   if(S.el.hp&&show('hp')){
-    const x=M,y=M+S.subjSize+82,w=46,h=H-y-M;
-    ctx.fillStyle=A;ctx.font=F(700,30);ctx.fillText('HP',x,y-44);
-    ctx.fillStyle=V;ctx.font=F(700,34);ctx.fillText(Math.round(S.hp)+'%',x,y-10);
+    const labelGap=48;
+    const x=M,y=M+S.subjSize+30,w=46,h=H-y-M-labelGap;
     setGlow(true,S.glow);ctx.strokeStyle=A;ctx.lineWidth=lw;rr(x,y,w,h,8);ctx.stroke();setGlow(false);
     const col=lerpC(S.red,S.green,S.hp/100);ctx.fillStyle=col;
     const fillH=(h-8)*(S.hp/100);const segH=14,gap=4;let yy=y+h-4-segH,drawn=0;
     while(drawn<fillH&&yy>y){rr(x+4,yy,w-8,segH,3);ctx.fill();yy-=(segH+gap);drawn+=(segH+gap);}
+    // single-line label below the bar: "HP  94%"
+    const ly=y+h+34;ctx.textAlign='left';ctx.font=F(700,30);
+    ctx.fillStyle=A;ctx.fillText('HP',x,ly);
+    const hw=ctx.measureText('HP').width+12;
+    ctx.fillStyle=V;ctx.fillText(Math.round(S.hp)+'%',x+hw,ly);
   }
 
   // ===== DATA TAGS =====
