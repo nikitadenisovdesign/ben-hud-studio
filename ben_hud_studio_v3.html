@@ -79,8 +79,8 @@
   .btn.danger:hover{background:var(--red);border-color:var(--red);color:#fff}
   .btn+.btn{margin-top:6px}
   .btnrow{display:flex;gap:6px}.btnrow .btn{margin-top:0}
-  .fileu{border:1.5px dashed var(--line);border-radius:7px;padding:13px;text-align:center;font-size:11px;color:var(--txt2);cursor:pointer;transition:.15s}
-  .fileu:hover{border-color:var(--accent);color:var(--accent)}
+  .fileu{border:1.5px dashed #f59a2e;border-radius:7px;padding:15px;text-align:center;font-size:11px;font-weight:700;color:#f59a2e;cursor:pointer;transition:.15s;background:rgba(245,154,46,.07)}
+  .fileu:hover{border-color:#ffb24d;color:#ffb24d;background:rgba(245,154,46,.16)}
   .seg{display:flex;background:var(--panel2);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:8px;flex-wrap:wrap}
   .seg button{flex:1;background:none;border:none;color:var(--txt2);padding:7px 4px;font-size:10px;cursor:pointer;font-family:var(--mono);transition:.15s;min-width:46px}
   .seg button.sel{background:var(--accent);color:var(--ink);font-weight:700}
@@ -743,9 +743,9 @@ function loadFile(f){
 document.getElementById('dropMedia').addEventListener('click',()=>document.getElementById('fileMedia').click());
 document.getElementById('fileMedia').addEventListener('change',e=>{if(e.target.files[0])loadFile(e.target.files[0]);});
 const dz=document.getElementById('dropMedia');
-dz.addEventListener('dragover',e=>{e.preventDefault();dz.style.borderColor=S.accent;});
-dz.addEventListener('dragleave',()=>dz.style.borderColor='');
-dz.addEventListener('drop',e=>{e.preventDefault();dz.style.borderColor='';if(e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);});
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.style.borderColor='#ffb24d';dz.style.background='rgba(245,154,46,.22)';});
+dz.addEventListener('dragleave',()=>{dz.style.borderColor='';dz.style.background='';});
+dz.addEventListener('drop',e=>{e.preventDefault();dz.style.borderColor='';dz.style.background='';if(e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);});
 
 // ===== play / scrub (drives video too) =====
 function setVideoTime(){if(media&&media.type==='video'){try{media.el.currentTime=t%media.dur;}catch(e){}}}
