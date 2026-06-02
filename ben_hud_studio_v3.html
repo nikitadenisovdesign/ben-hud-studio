@@ -31,19 +31,27 @@
   .sec.collapsed .body{display:none}
   .row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
   .row label{font-size:11px;color:var(--txt2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .row input[type=range]{flex:1.3;accent-color:var(--accent);height:3px}
+  .row input[type=range]{flex:1.3}
   .row .val{font-size:10px;color:var(--txt);min-width:32px;text-align:right;font-variant-numeric:tabular-nums}
+  /* refined range sliders */
+  input[type=range]{-webkit-appearance:none;appearance:none;background:transparent;cursor:pointer;height:14px;margin:0}
+  input[type=range]::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:var(--line)}
+  input[type=range]::-moz-range-track{height:3px;border-radius:2px;background:var(--line)}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;margin-top:-5px;width:12px;height:12px;border-radius:50%;background:var(--panel2);border:2px solid var(--accent);transition:background .12s,box-shadow .12s}
+  input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--panel2);border:2px solid var(--accent)}
+  input[type=range]:hover::-webkit-slider-thumb{background:var(--accent)}
+  input[type=range]:active::-webkit-slider-thumb{background:var(--accent);box-shadow:0 0 7px var(--accent)}
   .row input[type=text],.row input[type=number]{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:5px;padding:5px 7px;font-size:11px;width:100%;font-family:var(--mono)}
   .row input[type=number]{width:54px;flex:none}
   .row input[type=color]{width:28px;height:24px;border:1px solid var(--line);border-radius:5px;background:none;cursor:pointer;padding:2px}
   .swatchrow{display:flex;gap:6px;flex-wrap:wrap}
   .swrap{display:flex;flex-direction:column;align-items:center;gap:2px}.swrap span{font-size:8px;color:var(--txt2)}
-  .toggle{display:flex;align-items:center;gap:8px;margin-bottom:7px;cursor:pointer;user-select:none}
+  .toggle{display:flex;align-items:center;gap:9px;margin-bottom:8px;cursor:pointer;user-select:none}
   .toggle input{display:none}
-  .toggle .box{width:32px;height:18px;background:var(--line);border-radius:9px;position:relative;transition:.2s;flex-shrink:0}
-  .toggle .box::after{content:'';position:absolute;width:14px;height:14px;background:var(--txt2);border-radius:50%;top:2px;left:2px;transition:.2s}
-  .toggle input:checked + .box{background:var(--accent)}
-  .toggle input:checked + .box::after{left:16px;background:#052}
+  .toggle .box{width:30px;height:16px;background:#1c2529;border:1px solid var(--line);border-radius:9px;position:relative;transition:.18s;flex-shrink:0}
+  .toggle .box::after{content:'';position:absolute;width:10px;height:10px;background:var(--txt2);border-radius:50%;top:2px;left:2px;transition:.18s}
+  .toggle input:checked + .box{background:rgba(41,235,237,.18);border-color:var(--accent)}
+  .toggle input:checked + .box::after{left:16px;background:var(--accent);box-shadow:0 0 6px var(--accent)}
   .toggle span{font-size:11px}
   .btn{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:7px;padding:9px;font-size:11px;cursor:pointer;width:100%;transition:.15s;font-weight:500;font-family:var(--mono)}
   .btn:hover{background:var(--accent);color:#042;border-color:var(--accent)}
@@ -63,14 +71,14 @@
   .kfrow{display:flex;align-items:center;gap:6px;margin-bottom:6px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:6px 7px}
   .kfrow .t{font-size:9px;color:var(--txt2)}
   .kfrow input[type=number]{background:var(--bg);border:1px solid var(--line);color:var(--txt);border-radius:4px;padding:3px 4px;font-size:10px;width:46px;font-family:var(--mono)}
-  .kfrow input[type=range]{flex:1;accent-color:var(--accent);height:3px}
+  .kfrow input[type=range]{flex:1}
   .kfrow .x{cursor:pointer;color:var(--txt2);font-size:13px}.kfrow .x:hover{color:var(--red)}
   .stage{display:flex;flex-direction:column;background:#000;position:relative}
   .canvaswrap{flex:1;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:repeating-conic-gradient(#1a1a1a 0% 25%,#222 0% 50%) 50%/22px 22px}
   canvas#stage{max-width:100%;max-height:100%;box-shadow:0 0 40px rgba(0,0,0,.6)}
   .timeline{height:60px;background:var(--panel);border-top:1px solid var(--line);display:flex;align-items:center;padding:0 16px;gap:13px}
   .play{width:36px;height:36px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;color:#042;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-  .scrub{flex:1;accent-color:var(--accent)}
+  .scrub{flex:1}
   .tc{font-size:11px;color:var(--txt2);font-variant-numeric:tabular-nums;min-width:104px}
   .badge{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.5);padding:5px 10px;border-radius:6px;font-size:10px;color:var(--accent);border:1px solid var(--line)}
   .prog{position:absolute;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;z-index:50}
@@ -118,6 +126,7 @@
 
     <div class="sec"><h3>Elements <span class="chev">▾</span></h3><div class="body">
       <label class="toggle"><input type="checkbox" id="e_subject" checked><span class="box"></span><span>subject label</span></label>
+      <div class="row"><input type="text" id="subjText" value="TARGET: BENEFIT LEADER" placeholder="top label text"></div>
       <label class="toggle"><input type="checkbox" id="e_hp" checked><span class="box"></span><span>HP / vitals bar</span></label>
       <label class="toggle"><input type="checkbox" id="e_box" checked><span class="box"></span><span>tracking box</span></label>
       <label class="toggle"><input type="checkbox" id="e_geo" checked><span class="box"></span><span>supporting geometry</span></label>
@@ -126,9 +135,21 @@
       <label class="toggle"><input type="checkbox" id="e_scan" checked><span class="box"></span><span>scan overlay</span></label>
     </div></div>
 
-    <div class="sec"><h3>Data tags <span class="chev">▾</span></h3><div class="body" id="tagsBody"></div>
+    <div class="sec"><h3>Data tags <span class="chev">▾</span></h3><div class="body">
+      <div class="row"><label>inner padding</label><input type="range" id="tagPad" min="10" max="48" value="22"><span class="val" id="tagPadV">22</span></div>
+      <div class="row"><label>font size</label><input type="range" id="tagFont" min="16" max="44" value="26"><span class="val" id="tagFontV">26</span></div>
+      <div class="row"><label>corner radius</label><input type="range" id="tagRadius" min="0" max="32" value="14"><span class="val" id="tagRadiusV">14</span></div>
+      <div class="row"><label>number anim</label></div>
+      <div class="seg" id="numAnimSeg">
+        <button data-v="off" class="sel">off</button>
+        <button data-v="up">count up</button>
+        <button data-v="down">count down</button>
+      </div>
+      <div class="row"><label>anim time (s)</label><input type="range" id="numAnimDur" min="0.5" max="10" step="0.5" value="3"><span class="val" id="numAnimDurV">3</span></div>
+      <div class="hint">If a tag value contains a number it animates 0↔value over the timeline.</div>
+      <div id="tagsBody"></div>
       <button class="btn sm" id="addTag">+ add tag</button>
-    </div>
+    </div></div>
 
     <div class="sec"><h3>Global style <span class="chev">▾</span></h3><div class="body">
       <div class="swatchrow" style="margin-bottom:10px">
@@ -152,12 +173,11 @@
     <div class="sec"><h3>Render <span class="chev">▾</span></h3><div class="body">
       <div class="row"><label>duration (s)</label><input type="range" id="rDur" min="2" max="20" value="8"><span class="val" id="rDurV">8</span></div>
       <div class="row"><label>fps</label><input type="range" id="rFps" min="12" max="60" value="25"><span class="val" id="rFpsV">25</span></div>
-      <div class="sub" style="margin:6px 0">Total frames: <span id="frameCount" style="color:var(--accent)">200</span></div>
-      <button class="btn primary" id="expComposite">⬇ PNG — composited</button>
-      <button class="btn" id="expAlpha">⬇ PNG — HUD only (alpha)</button>
-      <button class="btn" id="expSeqAll">⬇ sequence — composited</button>
-      <button class="btn" id="expSeqLayers">⬇ sequence — HUD layers (alpha)</button>
-      <div class="hint">Layers export writes separate PNG sequences per element group, transparent bg. Video seeks per-frame for sync.</div>
+      <div class="sub" style="margin:6px 0">Total frames: <span id="frameCount" style="color:var(--accent)">200</span> · HUD only · alpha</div>
+      <button class="btn primary" id="startRender">▶ START RENDER</button>
+      <button class="btn" id="expSeqLayers">⬇ render as separate layers</button>
+      <button class="btn" id="expAlpha">⬇ snapshot — current frame (PNG)</button>
+      <div class="hint">START RENDER writes a transparent HUD-only PNG sequence (no footage). Layers mode splits each element group into its own sequence for AE.</div>
     </div></div>
   </aside>
 
@@ -256,12 +276,14 @@ const S={
   hpAnim:true,hpEase:'ease',
   hpKeys:[{t:0,v:94},{t:3,v:38},{t:5.5,v:8},{t:8,v:8}],
   el:{subject:true,hp:true,box:true,geo:true,tags:true,connectors:true,scan:true},
-  subject:'SUBJECT: BENEFITS MANAGER',
+  subject:'TARGET: BENEFIT LEADER',
   dur:8,fps:25,
+  // data tags — global layout + number animation
+  tagPad:22,tagFont:26,tagRadius:14,numAnim:'off',numAnimDur:3,
   tags:[
-    {label:'WORKLOAD',value:'CRITICAL',cr:14,font:26,anim:'float',amp:6,good:'MANAGED'},
-    {label:'OPEN ENROLMENT',value:'2 DAYS',cr:14,font:26,anim:'pulse',amp:5,good:'SORTED'},
-    {label:'DEADLINES',value:'6 OVERDUE',cr:14,font:26,anim:'drift',amp:7,good:'ALL CLEAR'}
+    {label:'WORKLOAD',value:'CRITICAL',good:'MANAGED'},
+    {label:'OPEN ENROLMENT',value:'2 DAYS',good:'SORTED'},
+    {label:'DEADLINES',value:'6 OVERDUE',good:'ALL CLEAR'}
   ]
 };
 
@@ -272,6 +294,16 @@ function lerpC(c1,c2,t){const a=[parseInt(c1.slice(1,3),16),parseInt(c1.slice(3,
 function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
 function F(weight,px){return `${weight} ${Math.round(px*S.fontScale)}px ${S.face}`;}
 function hash(i){const x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x);}
+// animate the first number inside a value string (0↔value over numAnimDur)
+function animNum(str){
+  if(S.numAnim==='off')return str;
+  const m=String(str).match(/-?\d+(\.\d+)?/);if(!m)return str;
+  const target=parseFloat(m[0]);
+  let p=Math.min(1,t/Math.max(0.1,S.numAnimDur));p=p*p*(3-2*p);
+  const dec=m[0].includes('.')?m[0].split('.')[1].length:0;
+  const cur=(S.numAnim==='up'?target*p:target*(1-p));
+  return str.replace(m[0],cur.toFixed(dec));
+}
 
 // ===== geometric tracking box paths =====
 function trackingBoxPath(cx,cy,w,h,style,cut){
@@ -471,17 +503,20 @@ function draw(alphaOnly,layerFilter){
 
   // ===== DATA TAGS =====
   if(S.el.tags&&show('tags')){
-    const tx=W-440,tw=380;
-    const n=S.tags.length;const top=H*0.30,bottom=H*0.78;
+    const pad=S.tagPad;
+    const lblPx=Math.round(S.tagFont*S.fontScale);
+    const valPx=Math.round(S.tagFont*1.5*S.fontScale);
+    const headH=lblPx+pad;
+    const th=headH+valPx+pad;                 // total card height from padding + type
+    const tw=Math.max(260,valPx*7);           // width scales with font so values fit
+    const tx=W-tw-60;
+    const n=S.tags.length;const top=H*0.30,bottom=H*0.80;
     const anchorX=g.cx+g.bw/2;
+    const sorted=(S.mode==='sorted');
     S.tags.forEach((tag,i)=>{
       const baseY=n>1?lerp(top,bottom,i/(n-1)):H*0.5;
-      let ax=0,ay=0;const ph=i*1.3;tag._scale=1;
-      if(tag.anim==='float'){ay=Math.sin(tt*1.5+ph)*tag.amp;}
-      else if(tag.anim==='pulse'){tag._scale=1+Math.sin(tt*2+ph)*0.02;}
-      else if(tag.anim==='drift'){ax=Math.sin(tt*0.8+ph)*tag.amp;ay=Math.cos(tt*1.1+ph)*tag.amp*0.6;}
-      const ty=baseY+ay,txx=tx+ax;
-      const th=Math.round(tag.font*S.fontScale)*2.0+44;
+      const ay=Math.sin(tt*1.2+i*1.3)*5;       // subtle baked float
+      const ty=baseY+ay,txx=tx;
       const anchorY=lerp(g.cy-g.bh*0.3,g.cy+g.bh*0.3,n>1?i/(n-1):0.5);
       if(S.el.connectors&&show('connectors')){
         ctx.strokeStyle=hexA(A,0.7);ctx.lineWidth=lw*0.7;
@@ -489,24 +524,20 @@ function draw(alphaOnly,layerFilter){
         ctx.fillStyle=A;ctx.beginPath();ctx.arc(anchorX,anchorY,4,0,7);ctx.fill();
         ctx.beginPath();ctx.arc(txx-12,ty+th/2,3,0,7);ctx.fill();
       }
-      ctx.save();
-      if(tag._scale!==1){ctx.translate(txx+tw/2,ty+th/2);ctx.scale(tag._scale,tag._scale);ctx.translate(-(txx+tw/2),-(ty+th/2));}
       setGlow(true,S.glow);
-      ctx.fillStyle='rgba(12,18,20,0.82)';rr(txx,ty,tw,th,tag.cr);ctx.fill();
-      ctx.strokeStyle=A;ctx.lineWidth=lw;rr(txx,ty,tw,th,tag.cr);ctx.stroke();
+      ctx.fillStyle='rgba(12,18,20,0.82)';rr(txx,ty,tw,th,S.tagRadius);ctx.fill();
+      ctx.strokeStyle=A;ctx.lineWidth=lw;rr(txx,ty,tw,th,S.tagRadius);ctx.stroke();
       setGlow(false);
       // accent header strip
-      ctx.fillStyle=hexA(A,0.18);rr(txx,ty,tw,Math.round(tag.font*S.fontScale)+18,tag.cr);ctx.fill();
+      ctx.fillStyle=hexA(A,0.18);rr(txx,ty,tw,headH,S.tagRadius);ctx.fill();
       ctx.textAlign='left';
-      ctx.fillStyle=A;ctx.font=F(700,tag.font);
-      ctx.fillText(tag.label,txx+24,ty+Math.round(tag.font*S.fontScale)+4);
-      const sorted=(S.mode==='sorted');
-      const val=sorted?tag.good:tag.value;
-      ctx.fillStyle=sorted?S.green:V;ctx.font=F(700,tag.font*1.5);
-      ctx.fillText(val,txx+24,ty+th-22);
+      ctx.fillStyle=A;ctx.font=F(700,S.tagFont);
+      ctx.fillText(tag.label,txx+pad,ty+pad*0.5+lblPx*0.8);
+      const val=animNum(sorted?tag.good:tag.value);
+      ctx.fillStyle=sorted?S.green:V;ctx.font=F(700,S.tagFont*1.5);
+      ctx.fillText(val,txx+pad,ty+th-pad);
       // status dot
-      ctx.fillStyle=sorted?S.green:S.red;ctx.beginPath();ctx.arc(txx+tw-26,ty+Math.round(tag.font*S.fontScale)*0.6+10,6,0,7);ctx.fill();
-      ctx.restore();
+      ctx.fillStyle=sorted?S.green:S.red;ctx.beginPath();ctx.arc(txx+tw-pad,ty+headH*0.5,6,0,7);ctx.fill();
     });
   }
   ctx.globalAlpha=1;ctx.shadowBlur=0;
@@ -538,34 +569,22 @@ function tick(){
   draw(false);requestAnimationFrame(tick);
 }
 
-// ===== TAG UI =====
+// ===== TAG UI (text only) =====
 function buildTagUI(){
   const body=document.getElementById('tagsBody');body.innerHTML='';
   S.tags.forEach((tag,i)=>{
     const c=document.createElement('div');c.className='tagcard';
     c.innerHTML=`<div class="hd"><span>TAG ${i+1}</span><span class="del" data-del="${i}">✕</span></div>
       <div class="row"><input type="text" value="${tag.label}" data-f="label" data-i="${i}" placeholder="label"></div>
-      <div class="row"><input type="text" value="${tag.value}" data-f="value" data-i="${i}" placeholder="value (bad)"></div>
-      <div class="row"><input type="text" value="${tag.good}" data-f="good" data-i="${i}" placeholder="value (sorted)"></div>
-      <div class="row"><label>anim</label></div>
-      <div class="seg tagAnim" data-i="${i}">
-        <button data-v="float" class="${tag.anim==='float'?'sel':''}">float</button>
-        <button data-v="pulse" class="${tag.anim==='pulse'?'sel':''}">pulse</button>
-        <button data-v="drift" class="${tag.anim==='drift'?'sel':''}">drift</button>
-        <button data-v="none" class="${tag.anim==='none'?'sel':''}">none</button>
-      </div>
-      <div class="row"><label>amp</label><input type="range" min="0" max="20" value="${tag.amp}" data-f="amp" data-i="${i}"><span class="val">${tag.amp}</span></div>
-      <div class="row"><label>radius</label><input type="range" min="0" max="40" value="${tag.cr}" data-f="cr" data-i="${i}"><span class="val">${tag.cr}</span></div>
-      <div class="row"><label>font</label><input type="range" min="14" max="48" value="${tag.font}" data-f="font" data-i="${i}"><span class="val">${tag.font}</span></div>`;
+      <div class="row"><input type="text" value="${tag.value}" data-f="value" data-i="${i}" placeholder="value (critical)"></div>
+      <div class="row"><input type="text" value="${tag.good}" data-f="good" data-i="${i}" placeholder="value (sorted)"></div>`;
     body.appendChild(c);
   });
   body.querySelectorAll('input[type=text]').forEach(inp=>inp.addEventListener('input',e=>{S.tags[+e.target.dataset.i][e.target.dataset.f]=e.target.value;}));
-  body.querySelectorAll('input[type=range]').forEach(inp=>inp.addEventListener('input',e=>{S.tags[+e.target.dataset.i][e.target.dataset.f]=parseFloat(e.target.value);e.target.nextElementSibling.textContent=e.target.value;}));
-  body.querySelectorAll('.tagAnim').forEach(seg=>{seg.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{seg.querySelectorAll('button').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');S.tags[+seg.dataset.i].anim=b.dataset.v;}));});
   body.querySelectorAll('.del').forEach(d=>d.addEventListener('click',()=>{S.tags.splice(+d.dataset.del,1);buildTagUI();}));
 }
 buildTagUI();
-document.getElementById('addTag').addEventListener('click',()=>{S.tags.push({label:'NEW TAG',value:'VALUE',good:'OK',cr:14,font:26,anim:'float',amp:6});buildTagUI();});
+document.getElementById('addTag').addEventListener('click',()=>{S.tags.push({label:'NEW TAG',value:'VALUE',good:'OK'});buildTagUI();});
 
 // ===== HP keyframe UI =====
 function buildKfUI(){
@@ -590,7 +609,8 @@ document.getElementById('addKf').addEventListener('click',()=>{const last=S.hpKe
 function bindRange(id,prop,scale){const el=document.getElementById(id);if(!el)return;el.addEventListener('input',()=>{let v=parseFloat(el.value);if(scale)v*=scale;S[prop]=v;const o=document.getElementById(id+'V');if(o)o.textContent=el.value;});}
 ['hp','glitch','scan','glow','lw','subjSize','boxDrift','boxSpeed','boxBreathe','boxRot',
  'boxX','boxY','boxW','boxH','boxCut','boxGlow','boxInner','boxDashLen','boxDashSpd','boxCornerLen',
- 'gFrameInset','gFrameLen','gGridSpace','gGridOp','gTickN','gCircN','gRingR'].forEach(k=>bindRange(k,k));
+ 'gFrameInset','gFrameLen','gGridSpace','gGridOp','gTickN','gCircN','gRingR',
+ 'tagPad','tagFont','tagRadius','numAnimDur'].forEach(k=>bindRange(k,k));
 bindRange('fontScale','fontScale',0.01);
 bindRange('boxLw','boxLw',0.01);
 // manual HP also adds: when not animating, slider drives hp
@@ -605,6 +625,7 @@ document.getElementById('c_glow').addEventListener('input',e=>S.glowColor=e.targ
 // right-panel toggles
 ['boxDouble','boxDash','boxCorners','boxLabel','g_frame','g_grid','g_ticks','g_circuit','g_ring','hpAnim'].forEach(k=>{const el=document.getElementById(k);if(el)el.addEventListener('change',e=>S[k]=e.target.checked);});
 document.getElementById('boxLabelText').addEventListener('input',e=>S.boxLabelText=e.target.value);
+document.getElementById('subjText').addEventListener('input',e=>S.subject=e.target.value);
 
 // seg pickers
 function segBind(id,cb){const seg=document.getElementById(id);if(!seg)return;seg.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{seg.querySelectorAll('button').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');cb(b.dataset.v);}));}
@@ -618,6 +639,7 @@ segBind('modeSeg',v=>{S.mode=v;
 segBind('boxStyleSeg',v=>S.boxStyle=parseInt(v));
 segBind('hpEaseSeg',v=>S.hpEase=v);
 segBind('faceSeg',v=>S.face=v);
+segBind('numAnimSeg',v=>S.numAnim=v);
 
 // render params
 bindRange('rDur','dur');bindRange('rFps','fps');
@@ -657,9 +679,8 @@ document.getElementById('play').addEventListener('click',function(){
 });
 document.getElementById('scrub').addEventListener('input',e=>{t=e.target.value/1000*S.dur;setVideoTime();});
 
-// ===== export =====
+// ===== export (HUD only / alpha) =====
 function dl(url,name){const a=document.createElement('a');a.href=url;a.download=name;a.click();}
-document.getElementById('expComposite').addEventListener('click',()=>{draw(false);dl(cv.toDataURL('image/png'),'ben_hud_composite.png');});
 document.getElementById('expAlpha').addEventListener('click',()=>{draw(true);dl(cv.toDataURL('image/png'),'ben_hud_alpha.png');});
 
 const prog=document.getElementById('prog'),progBar=document.getElementById('progBar'),progSub=document.getElementById('progSub'),progT=document.getElementById('progT');
@@ -669,17 +690,17 @@ function seekVideo(sec){return new Promise(res=>{
   v.addEventListener('seeked',onSeek);try{v.currentTime=sec%media.dur;}catch(e){res();}
   setTimeout(res,400); // safety timeout
 });}
-async function renderSeq(alphaOnly,layerGroups){
+// always renders HUD only with alpha (no footage in output)
+async function renderSeq(layerGroups){
   const wasPlaying=playing;playing=false;if(media&&media.type==='video')media.el.pause();
   prog.classList.add('on');
   const total=Math.round(S.dur*S.fps);
-  const groups=layerGroups||[{name:'composite',filter:null}];
+  const groups=layerGroups||[{name:'hud',filter:null}];
   for(const grp of groups){
     progT.textContent=`Rendering: ${grp.name}`;
     for(let i=0;i<total;i++){
       t=i/S.fps;if(S.hpAnim)S.hp=evalHP(t);
-      if(!alphaOnly)await seekVideo(t);
-      draw(alphaOnly,grp.filter);
+      draw(true,grp.filter);
       progBar.style.width=(i/total*100)+'%';progSub.textContent=`${grp.name} · frame ${i+1}/${total}`;
       dl(cv.toDataURL('image/png'),`ben_hud_${grp.name}_${String(i).padStart(3,'0')}.png`);
       await new Promise(r=>setTimeout(r,90));
@@ -687,8 +708,8 @@ async function renderSeq(alphaOnly,layerGroups){
   }
   prog.classList.remove('on');playing=wasPlaying;if(wasPlaying&&media&&media.type==='video')media.el.play();
 }
-document.getElementById('expSeqAll').addEventListener('click',()=>renderSeq(false,[{name:'composite',filter:null}]));
-document.getElementById('expSeqLayers').addEventListener('click',()=>renderSeq(true,[
+document.getElementById('startRender').addEventListener('click',()=>renderSeq([{name:'hud',filter:null}]));
+document.getElementById('expSeqLayers').addEventListener('click',()=>renderSeq([
   {name:'box',filter:['box']},
   {name:'geo',filter:['geo']},
   {name:'bars',filter:['hp','subject']},
