@@ -162,6 +162,7 @@
     <div class="sec"><h3>Elements <span class="chev">▾</span></h3><div class="body">
       <label class="toggle"><input type="checkbox" id="e_subject" checked><span class="box"></span><span>subject label</span></label>
       <div class="row"><input type="text" id="subjText" value="TARGET: BENEFIT LEADER" placeholder="top label text"></div>
+      <div class="row"><label>title font size</label><input type="range" id="subjSize" min="20" max="96" value="38"><span class="val" id="subjSizeV">38</span></div>
       <label class="toggle"><input type="checkbox" id="e_hp" checked><span class="box"></span><span>HP / vitals bar</span></label>
       <label class="toggle"><input type="checkbox" id="e_box" checked><span class="box"></span><span>tracking box</span></label>
       <label class="toggle"><input type="checkbox" id="e_geo" checked><span class="box"></span><span>supporting geometry</span></label>
@@ -171,10 +172,12 @@
     </div></div>
 
     <div class="sec"><h3>Data tags <span class="chev">▾</span></h3><div class="body">
+      <div class="row"><label>box width</label><input type="range" id="tagW" min="200" max="640" value="380"><span class="val" id="tagWV">380</span></div>
+      <div class="row"><label>box height</label><input type="range" id="tagH" min="70" max="240" value="120"><span class="val" id="tagHV">120</span></div>
       <div class="row"><label>inner padding</label><input type="range" id="tagPad" min="10" max="48" value="22"><span class="val" id="tagPadV">22</span></div>
       <div class="row"><label>font size</label><input type="range" id="tagFont" min="16" max="44" value="26"><span class="val" id="tagFontV">26</span></div>
       <div class="row"><label>corner radius</label><input type="range" id="tagRadius" min="0" max="32" value="14"><span class="val" id="tagRadiusV">14</span></div>
-      <div class="row"><label>connector length</label><input type="range" id="connLen" min="12" max="400" value="46"><span class="val" id="connLenV">46</span></div>
+      <div class="row"><label>distance from edge</label><input type="range" id="connLen" min="40" max="760" value="60"><span class="val" id="connLenV">60</span></div>
       <div class="row"><label>number anim</label></div>
       <div class="seg" id="numAnimSeg">
         <button data-v="off" class="sel">off</button>
@@ -198,7 +201,6 @@
       <div class="row"><label>line weight</label><input type="range" id="lw" min="1" max="8" value="2.5" step="0.5"><span class="val" id="lwV">2.5</span></div>
       <div class="row"><label>HUD font scale</label><input type="range" id="fontScale" min="60" max="220" value="120"><span class="val" id="fontScaleV">120</span></div>
       <div class="row"><label>line glow</label><input type="range" id="glow" min="0" max="60" value="14"><span class="val" id="glowV">14</span></div>
-      <div class="row"><label>subject size</label><input type="range" id="subjSize" min="20" max="72" value="38"><span class="val" id="subjSizeV">38</span></div>
       <div class="row"><label>content margin</label><input type="range" id="margin" min="40" max="340" value="110"><span class="val" id="marginV">110</span></div>
       <div class="row"><label>typeface</label></div>
       <div class="seg" id="faceSeg">
@@ -321,7 +323,7 @@ const S={
   subject:'TARGET: BENEFIT LEADER',
   dur:8,fps:25,
   // data tags — global layout + number animation
-  tagPad:22,tagFont:26,tagRadius:14,numAnim:'off',numAnimDur:3,connLen:46,
+  tagPad:22,tagFont:26,tagRadius:14,tagW:380,tagH:120,numAnim:'off',numAnimDur:3,connLen:60,
   tags:[
     {label:'WORKLOAD',value:'CRITICAL',good:'MANAGED'},
     {label:'OPEN ENROLMENT',value:'2 DAYS',good:'SORTED'},
@@ -549,11 +551,10 @@ function draw(alphaOnly,layerFilter){
   if(S.el.tags&&show('tags')){
     const pad=S.tagPad;
     const lblPx=Math.round(S.tagFont*S.fontScale);
-    const valPx=Math.round(S.tagFont*1.5*S.fontScale);
-    const headH=lblPx+pad;
-    const th=headH+valPx+pad;                 // total card height from padding + type
-    const tw=Math.max(260,valPx*7);           // width scales with font so values fit
-    const tx=W-tw-M;                          // right margin = content margin (symmetric with left)
+    const tw=S.tagW;                          // box size is independent of font
+    const th=S.tagH;
+    const headH=Math.min(th-pad,lblPx+pad);
+    const tx=W-tw-S.connLen;                  // connector length pushes the boxes left (away from inspector)
     const n=S.tags.length;
     // symmetric vertical layout: card centers evenly spread, equal top & bottom gaps
     const cTop=H*0.27,cBot=H*0.73;
@@ -565,7 +566,7 @@ function draw(alphaOnly,layerFilter){
       const ty=cYc-th/2+ay,txx=tx;
       const anchorY=lerp(g.cy-g.bh*0.3,g.cy+g.bh*0.3,n>1?i/(n-1):0.5);
       if(S.el.connectors&&show('connectors')){
-        const elbowX=txx-S.connLen;
+        const elbowX=txx-34;
         ctx.strokeStyle=hexA(A,0.7);ctx.lineWidth=lw*0.7;
         ctx.beginPath();ctx.moveTo(anchorX,anchorY);ctx.lineTo(elbowX,anchorY);ctx.lineTo(txx-12,ty+th/2);ctx.stroke();
         ctx.fillStyle=A;ctx.beginPath();ctx.arc(anchorX,anchorY,4,0,7);ctx.fill();
@@ -676,7 +677,7 @@ function numify(scope){
 ['hp','glitch','scan','glow','lw','subjSize','margin','boxDrift','boxSpeed','boxBreathe','boxRot',
  'boxX','boxY','boxW','boxH','boxCut','boxGlow','boxInner','boxDashLen','boxDashSpd','boxCornerLen',
  'gFrameInset','gFrameLen','gGridSpace','gGridOp','gTickN','gCircN','gRingR',
- 'tagPad','tagFont','tagRadius','numAnimDur','connLen'].forEach(k=>bindRange(k,k));
+ 'tagPad','tagFont','tagRadius','tagW','tagH','numAnimDur','connLen'].forEach(k=>bindRange(k,k));
 bindRange('fontScale','fontScale',0.01);
 bindRange('boxLw','boxLw',0.01);
 // manual HP also adds: when not animating, slider drives hp
@@ -821,7 +822,7 @@ updFrames();
 const RANGE_IDS=['hp','glitch','scan','glow','lw','subjSize','margin','boxDrift','boxSpeed','boxBreathe','boxRot',
  'boxX','boxY','boxW','boxH','boxCut','boxGlow','boxInner','boxDashLen','boxDashSpd','boxCornerLen',
  'gFrameInset','gFrameLen','gGridSpace','gGridOp','gTickN','gCircN','gRingR',
- 'tagPad','tagFont','tagRadius','numAnimDur','connLen'];
+ 'tagPad','tagFont','tagRadius','tagW','tagH','numAnimDur','connLen'];
 const EL_TOGGLES=['subject','hp','box','geo','tags','connectors','scan'];
 const S_TOGGLES=['boxDouble','boxDash','boxCorners','boxLabel','g_frame','g_grid','g_ticks','g_circuit','g_ring','hpAnim'];
 function setRange(id,val){const el=document.getElementById(id);if(!el)return;el.value=val;setOut(document.getElementById(id+'V'),el.value);}
