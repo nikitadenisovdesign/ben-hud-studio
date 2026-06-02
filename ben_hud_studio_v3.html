@@ -186,6 +186,10 @@
       </div>
       <div class="row"><label>anim time (s)</label><input type="range" id="numAnimDur" min="0.5" max="10" step="0.5" value="3"><span class="val" id="numAnimDurV">3</span></div>
       <div class="hint">If a tag value contains a number it animates 0↔value over the timeline.</div>
+      <label class="toggle" style="margin-top:8px"><input type="checkbox" id="blinkVal"><span class="box"></span><span>blink value text</span></label>
+      <label class="toggle"><input type="checkbox" id="blinkDot" checked><span class="box"></span><span>blink status dot</span></label>
+      <div class="row"><label>blink speed</label><input type="range" id="blinkSpeed" min="0.5" max="12" step="0.5" value="3"><span class="val" id="blinkSpeedV">3</span></div>
+      <div class="row"><label>blink depth</label><input type="range" id="blinkMin" min="0" max="90" value="40"><span class="val" id="blinkMinV">40</span></div>
       <div id="tagsBody"></div>
       <button class="btn sm" id="addTag">+ add tag</button>
     </div></div>
@@ -261,7 +265,7 @@
 
     <div class="sec"><h3>Tracking box · detail <span class="chev">▾</span></h3><div class="body">
       <label class="toggle"><input type="checkbox" id="boxDouble" checked><span class="box"></span><span>double line</span></label>
-      <div class="row"><label>inner gap</label><input type="range" id="boxInner" min="4" max="40" value="16"><span class="val" id="boxInnerV">16</span></div>
+      <div class="row"><label>inner gap</label><input type="range" id="boxInner" min="4" max="100" value="16"><span class="val" id="boxInnerV">16</span></div>
       <label class="toggle"><input type="checkbox" id="boxDash"><span class="box"></span><span>marching dashes</span></label>
       <div class="row"><label>dash len</label><input type="range" id="boxDashLen" min="4" max="60" value="22"><span class="val" id="boxDashLenV">22</span></div>
       <div class="row"><label>dash speed</label><input type="range" id="boxDashSpd" min="0" max="200" value="60"><span class="val" id="boxDashSpdV">60</span></div>
@@ -318,6 +322,7 @@ const S={
   dur:8,fps:25,
   // data tags — global layout + number animation
   tagPad:22,tagFont:26,tagRadius:14,tagW:380,tagH:120,numAnim:'off',numAnimDur:3,connLen:60,
+  blinkVal:false,blinkDot:true,blinkSpeed:3,blinkMin:40,
   tags:[
     {label:'WORKLOAD',value:'CRITICAL'},
     {label:'OPEN ENROLMENT',value:'2 DAYS'},
@@ -548,12 +553,16 @@ function draw(alphaOnly,layerFilter){
       ctx.textAlign='left';
       ctx.fillStyle=A;ctx.font=F(700,S.tagFont);
       ctx.fillText(tag.label,txx+pad,ty+pad*0.5+lblPx*0.8);
+      // blink alpha (shared by value text & status dot), per-tag phase offset
+      const blink=(S.blinkMin/100)+(1-S.blinkMin/100)*Math.abs(Math.sin(tt*S.blinkSpeed+i*0.7));
       const val=animNum(tag.value);
+      ctx.save();
+      if(S.blinkVal)ctx.globalAlpha=(1-flick)*blink;
       ctx.fillStyle=sorted?S.green:V;ctx.font=F(700,S.tagFont*1.5);
       ctx.fillText(val,txx+pad,ty+th-pad);
+      ctx.restore();
       // status dot — blinking
-      const dotA=0.4+0.6*Math.abs(Math.sin(tt*3+i*0.7));
-      ctx.save();ctx.globalAlpha=(1-flick)*dotA;
+      ctx.save();ctx.globalAlpha=(1-flick)*(S.blinkDot?blink:1);
       ctx.fillStyle=sorted?S.green:S.red;ctx.beginPath();ctx.arc(txx+tw-pad,ty+headH*0.5,6,0,7);ctx.fill();
       ctx.restore();
     });
@@ -643,7 +652,7 @@ function numify(scope){
 ['hp','glitch','scan','glow','lw','subjSize','margin','boxDrift','boxSpeed','boxBreathe','boxRot',
  'boxX','boxY','boxW','boxH','boxCut','boxGlow','boxInner','boxDashLen','boxDashSpd','boxCornerLen',
  'gFrameInset','gFrameLen','gGridSpace','gGridOp','gTickN','gCircN',
- 'tagPad','tagFont','tagRadius','tagW','tagH','numAnimDur','connLen'].forEach(k=>bindRange(k,k));
+ 'tagPad','tagFont','tagRadius','tagW','tagH','numAnimDur','connLen','blinkSpeed','blinkMin'].forEach(k=>bindRange(k,k));
 bindRange('fontScale','fontScale',0.01);
 bindRange('boxLw','boxLw',0.01);
 // manual HP also adds: when not animating, slider drives hp
@@ -687,7 +696,7 @@ window.addEventListener('mousedown',e=>{if(cpop.classList.contains('on')&&!cpop.
 // element toggles
 ['subject','hp','box','geo','tags','connectors','scan'].forEach(k=>{document.getElementById('e_'+k).addEventListener('change',e=>S.el[k]=e.target.checked);});
 // right-panel toggles
-['boxDouble','boxDash','boxCorners','g_frame','g_grid','g_ticks','g_circuit','hpAnim'].forEach(k=>{const el=document.getElementById(k);if(el)el.addEventListener('change',e=>S[k]=e.target.checked);});
+['boxDouble','boxDash','boxCorners','g_frame','g_grid','g_ticks','g_circuit','hpAnim','blinkVal','blinkDot'].forEach(k=>{const el=document.getElementById(k);if(el)el.addEventListener('change',e=>S[k]=e.target.checked);});
 document.getElementById('subjText').addEventListener('input',e=>S.subject=e.target.value);
 
 // seg pickers
@@ -787,9 +796,9 @@ updFrames();
 const RANGE_IDS=['hp','glitch','scan','glow','lw','subjSize','margin','boxDrift','boxSpeed','boxBreathe','boxRot',
  'boxX','boxY','boxW','boxH','boxCut','boxGlow','boxInner','boxDashLen','boxDashSpd','boxCornerLen',
  'gFrameInset','gFrameLen','gGridSpace','gGridOp','gTickN','gCircN',
- 'tagPad','tagFont','tagRadius','tagW','tagH','numAnimDur','connLen'];
+ 'tagPad','tagFont','tagRadius','tagW','tagH','numAnimDur','connLen','blinkSpeed','blinkMin'];
 const EL_TOGGLES=['subject','hp','box','geo','tags','connectors','scan'];
-const S_TOGGLES=['boxDouble','boxDash','boxCorners','g_frame','g_grid','g_ticks','g_circuit','hpAnim'];
+const S_TOGGLES=['boxDouble','boxDash','boxCorners','g_frame','g_grid','g_ticks','g_circuit','hpAnim','blinkVal','blinkDot'];
 function setRange(id,val){const el=document.getElementById(id);if(!el)return;el.value=val;setOut(document.getElementById(id+'V'),el.value);}
 function setSeg(id,v){const seg=document.getElementById(id);if(!seg)return;seg.querySelectorAll('button').forEach(b=>b.classList.toggle('sel',b.dataset.v===String(v)));}
 // push the entire S state back into every control
