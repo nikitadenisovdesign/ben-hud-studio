@@ -240,9 +240,8 @@
     <div class="sec"><h3>Tracking box · shape <span class="chev">▾</span></h3><div class="body">
       <div class="seg" id="boxStyleSeg">
         <button data-v="0" class="sel">cut-corner</button>
-        <button data-v="1">notched</button>
-        <button data-v="2">stepped</button>
-        <button data-v="3">brackets</button>
+        <button data-v="1">stepped</button>
+        <button data-v="2">brackets</button>
       </div>
       <div class="row"><label>pos X %</label><input type="range" id="boxX" min="10" max="90" value="50"><span class="val" id="boxXV">50</span></div>
       <div class="row"><label>pos Y %</label><input type="range" id="boxY" min="10" max="90" value="50"><span class="val" id="boxYV">50</span></div>
@@ -268,8 +267,6 @@
       <div class="row"><label>dash speed</label><input type="range" id="boxDashSpd" min="0" max="200" value="60"><span class="val" id="boxDashSpdV">60</span></div>
       <label class="toggle"><input type="checkbox" id="boxCorners" checked><span class="box"></span><span>corner brackets</span></label>
       <div class="row"><label>bracket len</label><input type="range" id="boxCornerLen" min="10" max="120" value="46"><span class="val" id="boxCornerLenV">46</span></div>
-      <label class="toggle"><input type="checkbox" id="boxLabel" checked><span class="box"></span><span>box label tab</span></label>
-      <div class="row"><input type="text" id="boxLabelText" value="TRACKING" placeholder="box label"></div>
     </div></div>
 
     <div class="sec"><h3>Supporting geometry <span class="chev">▾</span></h3><div class="body">
@@ -283,8 +280,6 @@
       <div class="row"><label>tick density</label><input type="range" id="gTickN" min="6" max="60" value="26"><span class="val" id="gTickNV">26</span></div>
       <label class="toggle"><input type="checkbox" id="g_circuit" checked><span class="box"></span><span>circuit traces</span></label>
       <div class="row"><label>trace count</label><input type="range" id="gCircN" min="0" max="14" value="6"><span class="val" id="gCircNV">6</span></div>
-      <label class="toggle"><input type="checkbox" id="g_ring"><span class="box"></span><span>rotating reticle ring</span></label>
-      <div class="row"><label>ring size</label><input type="range" id="gRingR" min="20" max="200" value="90"><span class="val" id="gRingRV">90</span></div>
     </div></div>
 
   </aside>
@@ -309,13 +304,12 @@ const S={
   boxStyle:0,boxX:50,boxY:50,boxW:30,boxH:80,boxCut:42,boxLw:1.0,boxGlow:16,
   boxDrift:8,boxSpeed:60,boxBreathe:30,boxRot:0,
   boxDouble:true,boxInner:16,boxDash:false,boxDashLen:22,boxDashSpd:60,
-  boxCorners:true,boxCornerLen:46,boxLabel:true,boxLabelText:'TRACKING',
+  boxCorners:true,boxCornerLen:46,
   // supporting geometry
   g_frame:true,gFrameInset:46,gFrameLen:120,
   g_grid:false,gGridSpace:80,gGridOp:10,
   g_ticks:true,gTickN:26,
   g_circuit:true,gCircN:6,
-  g_ring:false,gRingR:90,
   // hp animation
   hpAnim:true,hpEase:'ease',
   hpKeys:[{t:0,v:94},{t:3,v:38},{t:5.5,v:8},{t:8,v:8}],
@@ -325,9 +319,9 @@ const S={
   // data tags — global layout + number animation
   tagPad:22,tagFont:26,tagRadius:14,tagW:380,tagH:120,numAnim:'off',numAnimDur:3,connLen:60,
   tags:[
-    {label:'WORKLOAD',value:'CRITICAL',good:'MANAGED'},
-    {label:'OPEN ENROLMENT',value:'2 DAYS',good:'SORTED'},
-    {label:'DEADLINES',value:'6 OVERDUE',good:'ALL CLEAR'}
+    {label:'WORKLOAD',value:'CRITICAL'},
+    {label:'OPEN ENROLMENT',value:'2 DAYS'},
+    {label:'DEADLINES',value:'6 OVERDUE'}
   ]
 };
 
@@ -357,16 +351,7 @@ function trackingBoxPath(cx,cy,w,h,style,cut){
     ctx.moveTo(x+c,y);ctx.lineTo(x+w-c,y);ctx.lineTo(x+w,y+c);
     ctx.lineTo(x+w,y+h-c);ctx.lineTo(x+w-c,y+h);ctx.lineTo(x+c,y+h);
     ctx.lineTo(x,y+h-c);ctx.lineTo(x,y+c);ctx.closePath();
-  }else if(style===1){ // notched
-    const n=c*0.6;
-    ctx.moveTo(x+c,y);
-    ctx.lineTo(x+w/2-n,y);ctx.lineTo(x+w/2,y-n);ctx.lineTo(x+w/2+n,y);
-    ctx.lineTo(x+w-c,y);ctx.lineTo(x+w,y+c);
-    ctx.lineTo(x+w,y+h/2-n);ctx.lineTo(x+w+n,y+h/2);ctx.lineTo(x+w,y+h/2+n);
-    ctx.lineTo(x+w,y+h-c);ctx.lineTo(x+w-c,y+h);
-    ctx.lineTo(x+c,y+h);ctx.lineTo(x,y+h-c);
-    ctx.lineTo(x,y+c);ctx.closePath();
-  }else if(style===2){ // stepped
+  }else if(style===1){ // stepped
     const s=c*0.5;
     ctx.moveTo(x+c,y);ctx.lineTo(x+w-c,y);
     ctx.lineTo(x+w-c,y+s);ctx.lineTo(x+w,y+s);ctx.lineTo(x+w,y+c);
@@ -461,16 +446,6 @@ function draw(alphaOnly,layerFilter){
         ctx.beginPath();ctx.moveTo(xx,by-2);ctx.lineTo(xx,by-2-tl);ctx.stroke();
       }
     }
-    // rotating reticle ring near top-right of box
-    if(S.g_ring){
-      const rx=g.cx+g.bw/2,ry=g.cy-g.bh/2;const R=S.gRingR;
-      ctx.save();ctx.translate(rx,ry);ctx.rotate(tt*0.6);
-      ctx.strokeStyle=hexA(A,0.7);ctx.lineWidth=lw*0.8;
-      ctx.setLineDash([R*0.5,R*0.35]);ctx.beginPath();ctx.arc(0,0,R,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
-      ctx.beginPath();ctx.arc(0,0,R*0.6,Math.PI*0.1,Math.PI*0.9);ctx.stroke();
-      for(let a=0;a<4;a++){const ang=a*Math.PI/2;ctx.beginPath();ctx.moveTo(Math.cos(ang)*(R-8),Math.sin(ang)*(R-8));ctx.lineTo(Math.cos(ang)*(R+8),Math.sin(ang)*(R+8));ctx.stroke();}
-      ctx.restore();
-    }
     // circuit traces — procedural right-angle traces from box edges to nodes
     if(S.g_circuit&&S.gCircN>0){
       ctx.strokeStyle=hexA(A,0.6);ctx.lineWidth=lw*0.7;ctx.fillStyle=A;
@@ -503,28 +478,20 @@ function draw(alphaOnly,layerFilter){
     setGlow(true,S.boxGlow);
     ctx.strokeStyle=A;ctx.lineWidth=lw*S.boxLw;ctx.lineJoin='round';ctx.lineCap='round';
     if(S.boxDash){ctx.setLineDash([S.boxDashLen,S.boxDashLen*0.6]);ctx.lineDashOffset=-tt*S.boxDashSpd;}
-    if(S.boxStyle!==3){trackingBoxPath(g.cx,g.cy,g.bw,g.bh,S.boxStyle,S.boxCut);ctx.stroke();}
+    if(S.boxStyle!==2){trackingBoxPath(g.cx,g.cy,g.bw,g.bh,S.boxStyle,S.boxCut);ctx.stroke();}
     ctx.setLineDash([]);
     // inner double line
     if(S.boxDouble){
       ctx.lineWidth=lw*S.boxLw*0.6;ctx.globalAlpha=(1-flick)*0.55;
-      if(S.boxStyle!==3){trackingBoxPath(g.cx,g.cy,g.bw-S.boxInner,g.bh-S.boxInner,S.boxStyle,Math.max(0,S.boxCut-S.boxInner*0.5));ctx.stroke();}
+      if(S.boxStyle!==2){trackingBoxPath(g.cx,g.cy,g.bw-S.boxInner,g.bh-S.boxInner,S.boxStyle,Math.max(0,S.boxCut-S.boxInner*0.5));ctx.stroke();}
       ctx.globalAlpha=1-flick;
     }
-    // corner brackets emphasis (always for style 3, optional otherwise)
-    if(S.boxCorners||S.boxStyle===3){
+    // corner brackets emphasis (always for brackets style, optional otherwise)
+    if(S.boxCorners||S.boxStyle===2){
       ctx.lineWidth=lw*S.boxLw*1.3;
       cornerBrackets(g.cx,g.cy,g.bw,g.bh,S.boxCornerLen);
     }
     setGlow(false);
-    // box label tab
-    if(S.boxLabel&&S.boxLabelText){
-      const lx=g.cx-g.bw/2,ly=g.cy-g.bh/2;
-      ctx.font=F(700,15);const tw=ctx.measureText(S.boxLabelText).width+22;
-      ctx.fillStyle=A;ctx.beginPath();
-      ctx.moveTo(lx,ly-26);ctx.lineTo(lx+tw,ly-26);ctx.lineTo(lx+tw-10,ly-8);ctx.lineTo(lx,ly-8);ctx.closePath();ctx.fill();
-      ctx.fillStyle='#042';ctx.textAlign='left';ctx.fillText(S.boxLabelText,lx+10,ly-13);
-    }
     ctx.restore();ctx.globalAlpha=1-flick;
   }
 
@@ -581,7 +548,7 @@ function draw(alphaOnly,layerFilter){
       ctx.textAlign='left';
       ctx.fillStyle=A;ctx.font=F(700,S.tagFont);
       ctx.fillText(tag.label,txx+pad,ty+pad*0.5+lblPx*0.8);
-      const val=animNum(sorted?tag.good:tag.value);
+      const val=animNum(tag.value);
       ctx.fillStyle=sorted?S.green:V;ctx.font=F(700,S.tagFont*1.5);
       ctx.fillText(val,txx+pad,ty+th-pad);
       // status dot — blinking
@@ -627,15 +594,14 @@ function buildTagUI(){
     const c=document.createElement('div');c.className='tagcard';
     c.innerHTML=`<div class="hd"><span>TAG ${i+1}</span><span class="del" data-del="${i}">✕</span></div>
       <div class="row"><input type="text" value="${tag.label}" data-f="label" data-i="${i}" placeholder="label"></div>
-      <div class="row"><input type="text" value="${tag.value}" data-f="value" data-i="${i}" placeholder="value (critical)"></div>
-      <div class="row"><input type="text" value="${tag.good}" data-f="good" data-i="${i}" placeholder="value (sorted)"></div>`;
+      <div class="row"><input type="text" value="${tag.value}" data-f="value" data-i="${i}" placeholder="value"></div>`;
     body.appendChild(c);
   });
   body.querySelectorAll('input[type=text]').forEach(inp=>inp.addEventListener('input',e=>{S.tags[+e.target.dataset.i][e.target.dataset.f]=e.target.value;}));
   body.querySelectorAll('.del').forEach(d=>d.addEventListener('click',()=>{S.tags.splice(+d.dataset.del,1);buildTagUI();}));
 }
 buildTagUI();
-document.getElementById('addTag').addEventListener('click',()=>{S.tags.push({label:'NEW TAG',value:'VALUE',good:'OK'});buildTagUI();});
+document.getElementById('addTag').addEventListener('click',()=>{S.tags.push({label:'NEW TAG',value:'VALUE'});buildTagUI();});
 
 // ===== HP keyframe UI =====
 function buildKfUI(){
@@ -676,7 +642,7 @@ function numify(scope){
 }
 ['hp','glitch','scan','glow','lw','subjSize','margin','boxDrift','boxSpeed','boxBreathe','boxRot',
  'boxX','boxY','boxW','boxH','boxCut','boxGlow','boxInner','boxDashLen','boxDashSpd','boxCornerLen',
- 'gFrameInset','gFrameLen','gGridSpace','gGridOp','gTickN','gCircN','gRingR',
+ 'gFrameInset','gFrameLen','gGridSpace','gGridOp','gTickN','gCircN',
  'tagPad','tagFont','tagRadius','tagW','tagH','numAnimDur','connLen'].forEach(k=>bindRange(k,k));
 bindRange('fontScale','fontScale',0.01);
 bindRange('boxLw','boxLw',0.01);
@@ -721,8 +687,7 @@ window.addEventListener('mousedown',e=>{if(cpop.classList.contains('on')&&!cpop.
 // element toggles
 ['subject','hp','box','geo','tags','connectors','scan'].forEach(k=>{document.getElementById('e_'+k).addEventListener('change',e=>S.el[k]=e.target.checked);});
 // right-panel toggles
-['boxDouble','boxDash','boxCorners','boxLabel','g_frame','g_grid','g_ticks','g_circuit','g_ring','hpAnim'].forEach(k=>{const el=document.getElementById(k);if(el)el.addEventListener('change',e=>S[k]=e.target.checked);});
-document.getElementById('boxLabelText').addEventListener('input',e=>S.boxLabelText=e.target.value);
+['boxDouble','boxDash','boxCorners','g_frame','g_grid','g_ticks','g_circuit','hpAnim'].forEach(k=>{const el=document.getElementById(k);if(el)el.addEventListener('change',e=>S[k]=e.target.checked);});
 document.getElementById('subjText').addEventListener('input',e=>S.subject=e.target.value);
 
 // seg pickers
@@ -821,10 +786,10 @@ updFrames();
 // ===== presets =====
 const RANGE_IDS=['hp','glitch','scan','glow','lw','subjSize','margin','boxDrift','boxSpeed','boxBreathe','boxRot',
  'boxX','boxY','boxW','boxH','boxCut','boxGlow','boxInner','boxDashLen','boxDashSpd','boxCornerLen',
- 'gFrameInset','gFrameLen','gGridSpace','gGridOp','gTickN','gCircN','gRingR',
+ 'gFrameInset','gFrameLen','gGridSpace','gGridOp','gTickN','gCircN',
  'tagPad','tagFont','tagRadius','tagW','tagH','numAnimDur','connLen'];
 const EL_TOGGLES=['subject','hp','box','geo','tags','connectors','scan'];
-const S_TOGGLES=['boxDouble','boxDash','boxCorners','boxLabel','g_frame','g_grid','g_ticks','g_circuit','g_ring','hpAnim'];
+const S_TOGGLES=['boxDouble','boxDash','boxCorners','g_frame','g_grid','g_ticks','g_circuit','hpAnim'];
 function setRange(id,val){const el=document.getElementById(id);if(!el)return;el.value=val;setOut(document.getElementById(id+'V'),el.value);}
 function setSeg(id,v){const seg=document.getElementById(id);if(!seg)return;seg.querySelectorAll('button').forEach(b=>b.classList.toggle('sel',b.dataset.v===String(v)));}
 // push the entire S state back into every control
@@ -839,7 +804,6 @@ function syncUI(){
   setSeg('modeSeg',S.mode);setSeg('boxStyleSeg',S.boxStyle);setSeg('hpEaseSeg',S.hpEase);
   setSeg('faceSeg',S.face);setSeg('numAnimSeg',S.numAnim);
   document.getElementById('subjText').value=S.subject;
-  document.getElementById('boxLabelText').value=S.boxLabelText;
   buildTagUI();buildKfUI();updFrames();
 }
 function getPresets(){try{return JSON.parse(localStorage.getItem('hud_presets')||'{}');}catch(e){return {};}}
