@@ -8,7 +8,9 @@
 <style>
   :root{
     --bg:#0a0e10;--panel:#101619;--panel2:#171f23;--line:#27312f;
-    --txt:#e8eef0;--txt2:#7d8a90;--accent:#29ebed;--accent2:#ffc72e;
+    --txt:#e8eef0;--txt2:#7d8a90;
+    /* neutral control accent — UI chrome only. HUD output colors live in JS (S.accent etc.) */
+    --accent:#c3ccd1;--ink:#0c1113;
     --green:#5cdb73;--red:#f2453b;--mono:'JetBrains Mono',monospace;
   }
   *{box-sizing:border-box;margin:0;padding:0}
@@ -19,11 +21,11 @@
   .side.right{border-left:1px solid var(--line)}
   .side::-webkit-scrollbar{width:7px}.side::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
   .logo{font-size:15px;font-weight:700;letter-spacing:.5px;margin-bottom:3px;display:flex;align-items:center;gap:8px}
-  .logo .dot{width:17px;height:12px;background:var(--accent);border-radius:50%/60%;box-shadow:0 0 10px var(--accent)}
+  .logo .dot{width:17px;height:12px;background:var(--accent);border-radius:50%/60%}
   .ver{font-size:10px;color:var(--accent);font-weight:400}
   .sub{font-size:10px;color:var(--txt2);margin-bottom:16px;line-height:1.5}
   .panhd{font-size:11px;text-transform:uppercase;letter-spacing:1.4px;color:var(--accent);font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:7px}
-  .panhd::before{content:'';width:5px;height:14px;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+  .panhd::before{content:'';width:5px;height:14px;background:var(--accent)}
   .sec{margin-bottom:14px;border-top:1px solid var(--line);padding-top:12px}
   .sec:first-of-type{border-top:none;padding-top:0}
   .sec h3{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--txt2);margin-bottom:10px;font-weight:700;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
@@ -45,22 +47,34 @@
   input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;margin-top:-5px;width:12px;height:12px;border-radius:50%;background:var(--panel2);border:2px solid var(--accent);transition:background .12s,box-shadow .12s}
   input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--panel2);border:2px solid var(--accent)}
   input[type=range]:hover::-webkit-slider-thumb{background:var(--accent)}
-  input[type=range]:active::-webkit-slider-thumb{background:var(--accent);box-shadow:0 0 7px var(--accent)}
+  input[type=range]:active::-webkit-slider-thumb{background:var(--accent)}
   .row input[type=text],.row input[type=number]{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:5px;padding:5px 7px;font-size:11px;width:100%;font-family:var(--mono)}
   .row input[type=number]{width:54px;flex:none}
   .row input[type=color]{width:28px;height:24px;border:1px solid var(--line);border-radius:5px;background:none;cursor:pointer;padding:2px}
-  .swatchrow{display:flex;gap:6px;flex-wrap:wrap}
-  .swrap{display:flex;flex-direction:column;align-items:center;gap:2px}.swrap span{font-size:8px;color:var(--txt2)}
+  .swatchrow{display:flex;gap:8px;flex-wrap:wrap}
+  .swrap{display:flex;flex-direction:column;align-items:center;gap:3px}.swrap span{font-size:8px;color:var(--txt2)}
+  .cpick{width:30px;height:24px;border:1px solid var(--line);border-radius:5px;cursor:pointer;transition:.12s}
+  .cpick:hover{border-color:var(--accent)}
+  /* custom color picker popover */
+  .cpop{position:fixed;z-index:200;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:10px;width:196px;box-shadow:0 12px 34px rgba(0,0,0,.6);display:none}
+  .cpop.on{display:block}
+  .cpop canvas{display:block;border-radius:5px;cursor:crosshair}
+  #cpSV{width:176px;height:118px;margin-bottom:8px}
+  #cpHue{width:176px;height:13px;margin-bottom:9px}
+  .cprow{display:flex;align-items:center;gap:7px}
+  .cprow .hsh{font-size:13px;color:var(--txt2)}
+  #cpHex{flex:1;background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:5px;padding:5px 7px;font-size:12px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.5px}
+  #cpHex:focus{outline:none;border-color:var(--accent)}
   .toggle{display:flex;align-items:center;gap:9px;margin-bottom:8px;cursor:pointer;user-select:none}
   .toggle input{display:none}
   .toggle .box{width:30px;height:16px;background:#1c2529;border:1px solid var(--line);border-radius:9px;position:relative;transition:.18s;flex-shrink:0}
   .toggle .box::after{content:'';position:absolute;width:10px;height:10px;background:var(--txt2);border-radius:50%;top:2px;left:2px;transition:.18s}
-  .toggle input:checked + .box{background:rgba(41,235,237,.18);border-color:var(--accent)}
-  .toggle input:checked + .box::after{left:16px;background:var(--accent);box-shadow:0 0 6px var(--accent)}
+  .toggle input:checked + .box{background:rgba(195,204,209,.20);border-color:var(--accent)}
+  .toggle input:checked + .box::after{left:16px;background:var(--accent)}
   .toggle span{font-size:11px}
   .btn{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:7px;padding:9px;font-size:11px;cursor:pointer;width:100%;transition:.15s;font-weight:500;font-family:var(--mono)}
-  .btn:hover{background:var(--accent);color:#042;border-color:var(--accent)}
-  .btn.primary{background:var(--accent);color:#042;border-color:var(--accent);font-weight:700}
+  .btn:hover{background:var(--accent);color:var(--ink);border-color:var(--accent)}
+  .btn.primary{background:var(--accent);color:var(--ink);border-color:var(--accent);font-weight:700}
   .btn.sm{padding:6px;font-size:10px}
   .btn.danger:hover{background:var(--red);border-color:var(--red);color:#fff}
   .btn+.btn{margin-top:6px}
@@ -69,7 +83,7 @@
   .fileu:hover{border-color:var(--accent);color:var(--accent)}
   .seg{display:flex;background:var(--panel2);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:8px;flex-wrap:wrap}
   .seg button{flex:1;background:none;border:none;color:var(--txt2);padding:7px 4px;font-size:10px;cursor:pointer;font-family:var(--mono);transition:.15s;min-width:46px}
-  .seg button.sel{background:var(--accent);color:#042;font-weight:700}
+  .seg button.sel{background:var(--accent);color:var(--ink);font-weight:700}
   .tagcard{background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:9px;margin-bottom:8px;position:relative}
   .tagcard .hd{font-size:10px;color:var(--accent);margin-bottom:7px;font-weight:700;display:flex;justify-content:space-between}
   .tagcard .del{cursor:pointer;color:var(--txt2)}.tagcard .del:hover{color:var(--red)}
@@ -82,7 +96,7 @@
   .canvaswrap{flex:1;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:repeating-conic-gradient(#1a1a1a 0% 25%,#222 0% 50%) 50%/22px 22px}
   canvas#stage{max-width:100%;max-height:100%;box-shadow:0 0 40px rgba(0,0,0,.6)}
   .timeline{height:60px;background:var(--panel);border-top:1px solid var(--line);display:flex;align-items:center;padding:0 16px;gap:13px}
-  .play{width:36px;height:36px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;color:#042;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .play{width:36px;height:36px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;color:var(--ink);font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
   .scrub{flex:1}
   .tc{font-size:11px;color:var(--txt2);font-variant-numeric:tabular-nums;min-width:104px}
   .badge{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.5);padding:5px 10px;border-radius:6px;font-size:10px;color:var(--accent);border:1px solid var(--line)}
@@ -175,16 +189,17 @@
 
     <div class="sec"><h3>Global style <span class="chev">▾</span></h3><div class="body">
       <div class="swatchrow" style="margin-bottom:10px">
-        <div class="swrap"><input type="color" id="c_accent" value="#29ebed"><span>lines</span></div>
-        <div class="swrap"><input type="color" id="c_value" value="#ffc72e"><span>values</span></div>
-        <div class="swrap"><input type="color" id="c_green" value="#5cdb73"><span>good</span></div>
-        <div class="swrap"><input type="color" id="c_red" value="#f2453b"><span>bad</span></div>
-        <div class="swrap"><input type="color" id="c_glow" value="#29ebed"><span>glow</span></div>
+        <div class="swrap"><div class="cpick" id="c_accent" data-prop="accent"></div><span>lines</span></div>
+        <div class="swrap"><div class="cpick" id="c_value" data-prop="value"></div><span>values</span></div>
+        <div class="swrap"><div class="cpick" id="c_green" data-prop="green"></div><span>good</span></div>
+        <div class="swrap"><div class="cpick" id="c_red" data-prop="red"></div><span>bad</span></div>
+        <div class="swrap"><div class="cpick" id="c_glow" data-prop="glowColor"></div><span>glow</span></div>
       </div>
       <div class="row"><label>line weight</label><input type="range" id="lw" min="1" max="8" value="2.5" step="0.5"><span class="val" id="lwV">2.5</span></div>
       <div class="row"><label>HUD font scale</label><input type="range" id="fontScale" min="60" max="220" value="120"><span class="val" id="fontScaleV">120</span></div>
       <div class="row"><label>line glow</label><input type="range" id="glow" min="0" max="60" value="14"><span class="val" id="glowV">14</span></div>
       <div class="row"><label>subject size</label><input type="range" id="subjSize" min="20" max="72" value="38"><span class="val" id="subjSizeV">38</span></div>
+      <div class="row"><label>content margin</label><input type="range" id="margin" min="40" max="340" value="110"><span class="val" id="marginV">110</span></div>
       <div class="row"><label>typeface</label></div>
       <div class="seg" id="faceSeg">
         <button data-v="'JetBrains Mono',monospace" class="sel">mono</button>
@@ -196,10 +211,9 @@
       <div class="row"><label>duration (s)</label><input type="range" id="rDur" min="2" max="20" value="8"><span class="val" id="rDurV">8</span></div>
       <div class="row"><label>fps</label><input type="range" id="rFps" min="12" max="60" value="25"><span class="val" id="rFpsV">25</span></div>
       <div class="sub" style="margin:6px 0">Total frames: <span id="frameCount" style="color:var(--accent)">200</span> · HUD only · alpha</div>
+      <label class="toggle"><input type="checkbox" id="renderLayers" checked><span class="box"></span><span>render separate layers</span></label>
       <button class="btn primary" id="startRender">▶ START RENDER</button>
-      <button class="btn" id="expSeqLayers">⬇ render as separate layers</button>
-      <button class="btn" id="expAlpha">⬇ snapshot — current frame (PNG)</button>
-      <div class="hint">START RENDER writes a transparent HUD-only PNG sequence (no footage). Layers mode splits each element group into its own sequence for AE.</div>
+      <div class="hint">Renders a transparent HUD-only PNG sequence (no footage). You'll be asked to pick an output folder. Layers on = each element group exported as its own sequence for AE.</div>
     </div></div>
   </aside>
 
@@ -274,6 +288,12 @@
   </aside>
 </div>
 
+<div class="cpop" id="cpop">
+  <canvas id="cpSV" width="176" height="118"></canvas>
+  <canvas id="cpHue" width="176" height="13"></canvas>
+  <div class="cprow"><span class="hsh">#</span><input id="cpHex" maxlength="7" value="29EBED"></div>
+</div>
+
 <script>
 const cv=document.getElementById('stage'),ctx=cv.getContext('2d');
 const W=1920,H=1080;
@@ -282,7 +302,7 @@ let media=null,playing=false,t=0,lastFrame=performance.now();
 const S={
   hp:38,glitch:20,scan:40,glow:14,glowColor:'#29ebed',
   accent:'#29ebed',value:'#ffc72e',green:'#5cdb73',red:'#f2453b',
-  lw:2.5,subjSize:38,fontScale:1.2,face:"'JetBrains Mono',monospace",mode:'critical',
+  lw:2.5,subjSize:38,fontScale:1.2,face:"'JetBrains Mono',monospace",mode:'critical',margin:110,
   // tracking box
   boxStyle:0,boxX:50,boxY:50,boxW:30,boxH:80,boxCut:42,boxLw:1.0,boxGlow:16,
   boxDrift:8,boxSpeed:60,boxBreathe:30,boxRot:0,
@@ -506,21 +526,23 @@ function draw(alphaOnly,layerFilter){
     ctx.restore();ctx.globalAlpha=1-flick;
   }
 
+  const M=S.margin;   // content margin — keeps elements clear of the frame brackets
+
   // ===== SUBJECT =====
   if(S.el.subject&&show('subject')){
     setGlow(true,S.glow);ctx.fillStyle=A;ctx.font=F(700,S.subjSize);ctx.textAlign='left';
-    ctx.fillText(S.subject,70,70+S.subjSize*0.4);setGlow(false);
+    ctx.fillText(S.subject,M,M+S.subjSize*0.5);setGlow(false);
   }
 
   // ===== HP / VITALS BAR =====
   if(S.el.hp&&show('hp')){
-    const x=90,y=190,w=46,h=H-360;
+    const x=M,y=M+S.subjSize+82,w=46,h=H-y-M;
+    ctx.fillStyle=A;ctx.font=F(700,30);ctx.fillText('HP',x,y-44);
+    ctx.fillStyle=V;ctx.font=F(700,34);ctx.fillText(Math.round(S.hp)+'%',x,y-10);
     setGlow(true,S.glow);ctx.strokeStyle=A;ctx.lineWidth=lw;rr(x,y,w,h,8);ctx.stroke();setGlow(false);
     const col=lerpC(S.red,S.green,S.hp/100);ctx.fillStyle=col;
     const fillH=(h-8)*(S.hp/100);const segH=14,gap=4;let yy=y+h-4-segH,drawn=0;
     while(drawn<fillH&&yy>y){rr(x+4,yy,w-8,segH,3);ctx.fill();yy-=(segH+gap);drawn+=(segH+gap);}
-    ctx.fillStyle=A;ctx.font=F(700,30);ctx.fillText('HP',x,y-46);
-    ctx.fillStyle=V;ctx.font=F(700,34);ctx.fillText(Math.round(S.hp)+'%',x,y-12);
   }
 
   // ===== DATA TAGS =====
@@ -531,14 +553,16 @@ function draw(alphaOnly,layerFilter){
     const headH=lblPx+pad;
     const th=headH+valPx+pad;                 // total card height from padding + type
     const tw=Math.max(260,valPx*7);           // width scales with font so values fit
-    const tx=W-tw-60;
-    const n=S.tags.length;const top=H*0.30,bottom=H*0.80;
+    const tx=W-tw-M;                          // right margin = content margin (symmetric with left)
+    const n=S.tags.length;
+    // symmetric vertical layout: card centers evenly spread, equal top & bottom gaps
+    const cTop=H*0.27,cBot=H*0.73;
     const anchorX=g.cx+g.bw/2;
     const sorted=(S.mode==='sorted');
     S.tags.forEach((tag,i)=>{
-      const baseY=n>1?lerp(top,bottom,i/(n-1)):H*0.5;
+      const cYc=n>1?lerp(cTop,cBot,i/(n-1)):H*0.5;
       const ay=Math.sin(tt*1.2+i*1.3)*5;       // subtle baked float
-      const ty=baseY+ay,txx=tx;
+      const ty=cYc-th/2+ay,txx=tx;
       const anchorY=lerp(g.cy-g.bh*0.3,g.cy+g.bh*0.3,n>1?i/(n-1):0.5);
       if(S.el.connectors&&show('connectors')){
         const elbowX=txx-S.connLen;
@@ -559,8 +583,11 @@ function draw(alphaOnly,layerFilter){
       const val=animNum(sorted?tag.good:tag.value);
       ctx.fillStyle=sorted?S.green:V;ctx.font=F(700,S.tagFont*1.5);
       ctx.fillText(val,txx+pad,ty+th-pad);
-      // status dot
+      // status dot — blinking
+      const dotA=0.4+0.6*Math.abs(Math.sin(tt*3+i*0.7));
+      ctx.save();ctx.globalAlpha=(1-flick)*dotA;
       ctx.fillStyle=sorted?S.green:S.red;ctx.beginPath();ctx.arc(txx+tw-pad,ty+headH*0.5,6,0,7);ctx.fill();
+      ctx.restore();
     });
   }
   ctx.globalAlpha=1;ctx.shadowBlur=0;
@@ -646,7 +673,7 @@ function numify(scope){
     inp.addEventListener('change',()=>{r.value=inp.value;r.dispatchEvent(new Event('input',{bubbles:true}));});
   });
 }
-['hp','glitch','scan','glow','lw','subjSize','boxDrift','boxSpeed','boxBreathe','boxRot',
+['hp','glitch','scan','glow','lw','subjSize','margin','boxDrift','boxSpeed','boxBreathe','boxRot',
  'boxX','boxY','boxW','boxH','boxCut','boxGlow','boxInner','boxDashLen','boxDashSpd','boxCornerLen',
  'gFrameInset','gFrameLen','gGridSpace','gGridOp','gTickN','gCircN','gRingR',
  'tagPad','tagFont','tagRadius','numAnimDur','connLen'].forEach(k=>bindRange(k,k));
@@ -655,9 +682,40 @@ bindRange('boxLw','boxLw',0.01);
 // manual HP also adds: when not animating, slider drives hp
 document.getElementById('hp').addEventListener('input',e=>{if(!S.hpAnim)S.hp=parseFloat(e.target.value);});
 
-// colors
-['accent','value','green','red'].forEach(k=>{const el=document.getElementById('c_'+k);el.addEventListener('input',()=>S[k]=el.value);});
-document.getElementById('c_glow').addEventListener('input',e=>S.glowColor=e.target.value);
+// ===== custom color picker =====
+const cpop=document.getElementById('cpop'),cpSV=document.getElementById('cpSV'),cpHue=document.getElementById('cpHue'),cpHex=document.getElementById('cpHex');
+const svx=cpSV.getContext('2d'),hux=cpHue.getContext('2d');
+let cpTarget=null,cpProp=null,cpH=180,cpS=1,cpV=1;
+function hsv2rgb(h,s,v){h/=360;const i=Math.floor(h*6),f=h*6-i,p=v*(1-s),q=v*(1-f*s),u=v*(1-(1-f)*s);let r,g,b;
+  switch(i%6){case 0:r=v,g=u,b=p;break;case 1:r=q,g=v,b=p;break;case 2:r=p,g=v,b=u;break;case 3:r=p,g=q,b=v;break;case 4:r=u,g=p,b=v;break;default:r=v,g=p,b=q;}
+  return [Math.round(r*255),Math.round(g*255),Math.round(b*255)];}
+function rgb2hsv(r,g,b){r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;let h=0;
+  if(d){if(mx===r)h=((g-b)/d+6)%6;else if(mx===g)h=(b-r)/d+2;else h=(r-g)/d+4;h*=60;}return [h,mx?d/mx:0,mx];}
+function hex2rgb(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+function rgb2hex(r,g,b){return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');}
+function curHex(){const[r,g,b]=hsv2rgb(cpH,cpS,cpV);return rgb2hex(r,g,b);}
+function drawSV(){const w=cpSV.width,hh=cpSV.height,[r,g,b]=hsv2rgb(cpH,1,1);
+  svx.fillStyle=`rgb(${r},${g},${b})`;svx.fillRect(0,0,w,hh);
+  let wg=svx.createLinearGradient(0,0,w,0);wg.addColorStop(0,'#fff');wg.addColorStop(1,'rgba(255,255,255,0)');svx.fillStyle=wg;svx.fillRect(0,0,w,hh);
+  let bg=svx.createLinearGradient(0,0,0,hh);bg.addColorStop(0,'rgba(0,0,0,0)');bg.addColorStop(1,'#000');svx.fillStyle=bg;svx.fillRect(0,0,w,hh);
+  const cx=cpS*w,cy=(1-cpV)*hh;svx.strokeStyle='#000';svx.lineWidth=3;svx.beginPath();svx.arc(cx,cy,6,0,7);svx.stroke();svx.strokeStyle='#fff';svx.lineWidth=2;svx.beginPath();svx.arc(cx,cy,6,0,7);svx.stroke();}
+function drawHue(){const w=cpHue.width,hh=cpHue.height,grd=hux.createLinearGradient(0,0,w,0);
+  for(let i=0;i<=6;i++){const[r,g,b]=hsv2rgb(i*60,1,1);grd.addColorStop(i/6,`rgb(${r},${g},${b})`);}
+  hux.fillStyle=grd;hux.fillRect(0,0,w,hh);const cx=cpH/360*w;hux.strokeStyle='#000';hux.lineWidth=3;hux.strokeRect(cx-2,0,4,hh);hux.strokeStyle='#fff';hux.lineWidth=1;hux.strokeRect(cx-2,0,4,hh);}
+function cpApply(){const hex=curHex();cpHex.value=hex.slice(1).toUpperCase();if(cpTarget){cpTarget.style.background=hex;cpTarget.dataset.color=hex;}if(cpProp)S[cpProp]=hex;drawSV();drawHue();}
+function openPicker(sw){cpTarget=sw;cpProp=sw.dataset.prop;const hex=sw.dataset.color||'#ffffff';const[r,g,b]=hex2rgb(hex);[cpH,cpS,cpV]=rgb2hsv(r,g,b);
+  drawSV();drawHue();cpHex.value=hex.slice(1).toUpperCase();
+  const rc=sw.getBoundingClientRect();cpop.style.left=Math.min(window.innerWidth-208,Math.max(8,rc.left))+'px';cpop.style.top=Math.min(window.innerHeight-200,rc.bottom+8)+'px';cpop.classList.add('on');}
+function svPick(e){const rt=cpSV.getBoundingClientRect();let x=(e.clientX-rt.left)/rt.width,y=(e.clientY-rt.top)/rt.height;cpS=Math.max(0,Math.min(1,x));cpV=1-Math.max(0,Math.min(1,y));cpApply();}
+function huePick(e){const rt=cpHue.getBoundingClientRect();let x=(e.clientX-rt.left)/rt.width;cpH=Math.max(0,Math.min(1,x))*360;cpApply();}
+let dragSV=false,dragHue=false;
+cpSV.addEventListener('mousedown',e=>{dragSV=true;svPick(e);});
+cpHue.addEventListener('mousedown',e=>{dragHue=true;huePick(e);});
+window.addEventListener('mousemove',e=>{if(dragSV)svPick(e);else if(dragHue)huePick(e);});
+window.addEventListener('mouseup',()=>{dragSV=dragHue=false;});
+cpHex.addEventListener('input',()=>{const v=cpHex.value.replace(/[^0-9a-fA-F]/g,'');if(v.length===6){const[r,g,b]=hex2rgb(v);[cpH,cpS,cpV]=rgb2hsv(r,g,b);if(cpTarget){cpTarget.style.background='#'+v;cpTarget.dataset.color='#'+v;}if(cpProp)S[cpProp]='#'+v;drawSV();drawHue();}});
+document.querySelectorAll('.cpick').forEach(sw=>{sw.dataset.color=S[sw.dataset.prop];sw.style.background=S[sw.dataset.prop];sw.addEventListener('click',e=>{e.stopPropagation();openPicker(sw);});});
+window.addEventListener('mousedown',e=>{if(cpop.classList.contains('on')&&!cpop.contains(e.target)&&!e.target.classList.contains('cpick'))cpop.classList.remove('on');});
 
 // element toggles
 ['subject','hp','box','geo','tags','connectors','scan'].forEach(k=>{document.getElementById('e_'+k).addEventListener('change',e=>S.el[k]=e.target.checked);});
@@ -720,46 +778,47 @@ document.getElementById('scrub').addEventListener('input',e=>{t=e.target.value/1
 
 // ===== export (HUD only / alpha) =====
 function dl(url,name){const a=document.createElement('a');a.href=url;a.download=name;a.click();}
-document.getElementById('expAlpha').addEventListener('click',()=>{draw(true);dl(cv.toDataURL('image/png'),'ben_hud_alpha.png');});
-
 const prog=document.getElementById('prog'),progBar=document.getElementById('progBar'),progSub=document.getElementById('progSub'),progT=document.getElementById('progT');
-function seekVideo(sec){return new Promise(res=>{
-  if(!media||media.type!=='video'){res();return;}
-  const v=media.el;const onSeek=()=>{v.removeEventListener('seeked',onSeek);res();};
-  v.addEventListener('seeked',onSeek);try{v.currentTime=sec%media.dur;}catch(e){res();}
-  setTimeout(res,400); // safety timeout
-});}
-// always renders HUD only with alpha (no footage in output)
-async function renderSeq(layerGroups){
+function canvasBlob(){return new Promise(res=>cv.toBlob(res,'image/png'));}
+let dirHandle=null;
+async function writePNG(name,blob){
+  if(dirHandle){const fh=await dirHandle.getFileHandle(name,{create:true});const w=await fh.createWritable();await w.write(blob);await w.close();}
+  else{const url=URL.createObjectURL(blob);dl(url,name);setTimeout(()=>URL.revokeObjectURL(url),1500);}
+}
+const LAYER_GROUPS=[
+  {name:'box',filter:['box']},{name:'geo',filter:['geo']},
+  {name:'bars',filter:['hp','subject']},{name:'tags',filter:['tags','connectors']},{name:'scan',filter:['scan']}
+];
+// renders HUD only with alpha (no footage), to a chosen folder when supported
+async function renderSeq(){
+  const groups=document.getElementById('renderLayers').checked?LAYER_GROUPS:[{name:'hud',filter:null}];
+  dirHandle=null;
+  if(window.showDirectoryPicker){
+    try{dirHandle=await window.showDirectoryPicker({mode:'readwrite'});}
+    catch(e){if(e&&e.name==='AbortError')return;}   // user cancelled → abort render
+  }
   const wasPlaying=playing;playing=false;if(media&&media.type==='video')media.el.pause();
   prog.classList.add('on');
   const total=Math.round(S.dur*S.fps);
-  const groups=layerGroups||[{name:'hud',filter:null}];
   for(const grp of groups){
     progT.textContent=`Rendering: ${grp.name}`;
     for(let i=0;i<total;i++){
       t=i/S.fps;if(S.hpAnim)S.hp=evalHP(t);
       draw(true,grp.filter);
-      progBar.style.width=(i/total*100)+'%';progSub.textContent=`${grp.name} · frame ${i+1}/${total}`;
-      dl(cv.toDataURL('image/png'),`ben_hud_${grp.name}_${String(i).padStart(3,'0')}.png`);
-      await new Promise(r=>setTimeout(r,90));
+      progBar.style.width=(i/total*100)+'%';
+      progSub.textContent=`${grp.name} · frame ${i+1}/${total}`+(dirHandle?'':' · downloads');
+      const blob=await canvasBlob();await writePNG(`ben_hud_${grp.name}_${String(i).padStart(3,'0')}.png`,blob);
+      await new Promise(r=>setTimeout(r,dirHandle?0:55));
     }
   }
   prog.classList.remove('on');playing=wasPlaying;if(wasPlaying&&media&&media.type==='video')media.el.play();
 }
-document.getElementById('startRender').addEventListener('click',()=>renderSeq([{name:'hud',filter:null}]));
-document.getElementById('expSeqLayers').addEventListener('click',()=>renderSeq([
-  {name:'box',filter:['box']},
-  {name:'geo',filter:['geo']},
-  {name:'bars',filter:['hp','subject']},
-  {name:'tags',filter:['tags','connectors']},
-  {name:'scan',filter:['scan']}
-]));
+document.getElementById('startRender').addEventListener('click',renderSeq);
 
 updFrames();
 
 // ===== presets =====
-const RANGE_IDS=['hp','glitch','scan','glow','lw','subjSize','boxDrift','boxSpeed','boxBreathe','boxRot',
+const RANGE_IDS=['hp','glitch','scan','glow','lw','subjSize','margin','boxDrift','boxSpeed','boxBreathe','boxRot',
  'boxX','boxY','boxW','boxH','boxCut','boxGlow','boxInner','boxDashLen','boxDashSpd','boxCornerLen',
  'gFrameInset','gFrameLen','gGridSpace','gGridOp','gTickN','gCircN','gRingR',
  'tagPad','tagFont','tagRadius','numAnimDur','connLen'];
@@ -775,8 +834,7 @@ function syncUI(){
   setRange('rDur',S.dur);setRange('rFps',S.fps);
   EL_TOGGLES.forEach(k=>{const el=document.getElementById('e_'+k);if(el)el.checked=!!S.el[k];});
   S_TOGGLES.forEach(k=>{const el=document.getElementById(k);if(el)el.checked=!!S[k];});
-  ['accent','value','green','red'].forEach(k=>{const el=document.getElementById('c_'+k);if(el)el.value=S[k];});
-  document.getElementById('c_glow').value=S.glowColor;
+  document.querySelectorAll('.cpick').forEach(sw=>{const c=S[sw.dataset.prop];if(c){sw.dataset.color=c;sw.style.background=c;}});
   setSeg('modeSeg',S.mode);setSeg('boxStyleSeg',S.boxStyle);setSeg('hpEaseSeg',S.hpEase);
   setSeg('faceSeg',S.face);setSeg('numAnimSeg',S.numAnim);
   document.getElementById('subjText').value=S.subject;

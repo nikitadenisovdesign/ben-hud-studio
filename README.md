@@ -16,7 +16,9 @@ Built for the Ben · REBA 2026 project.
 - **Editable values** — every slider has a paired number input; type exact values or drag.
 - **Data tags** — add/remove tags (text only), global padding / font / corner radius, adjustable connector length, status dot, and number animation (count up / down) for numeric values.
 - **Typography** — global HUD font scale, mono / Rajdhani typefaces. *(Canvas ignores CSS vars — fixed in v3.)*
-- **Export** — composited PNG, HUD-only alpha PNG, and per-layer PNG sequences (box / geometry / bars / tags / scan) with transparent background.
+- **Custom color picker** — in-app HSV picker with hex input (no native OS dialog); recolors the HUD live.
+- **Neutral UI** — controls use a neutral grey accent so the cyan stays on the HUD output, not the chrome.
+- **Render** — START RENDER writes a transparent HUD-only PNG sequence to a folder you choose (File System Access API; falls back to downloads). Toggle "render separate layers" to split each element group into its own sequence for AE.
 
 ## Usage
 
