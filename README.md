@@ -12,7 +12,9 @@ Built for the Ben · REBA 2026 project.
 - **Tracking box** — 4 shapes (cut-corner / notched / stepped / brackets), full position & size control, drift, breathe, rotate, double-line, marching dashes, corner brackets, label tab, per-element glow.
 - **HP / vitals animation** — keyframe editor (time in seconds → value %) with smooth / linear / step easing and mode presets (critical / recovering / sorted).
 - **Supporting geometry** — outer frame brackets, background grid, ruler edge-ticks, procedural circuit traces with pulsing nodes, rotating reticle ring.
-- **Data tags** — add/remove tags with header strip, big value, status dot, animated connector lines (float / pulse / drift).
+- **Presets** — save / load named scenes (stored in-browser) and export / import the full scene as a JSON file.
+- **Editable values** — every slider has a paired number input; type exact values or drag.
+- **Data tags** — add/remove tags (text only), global padding / font / corner radius, adjustable connector length, status dot, and number animation (count up / down) for numeric values.
 - **Typography** — global HUD font scale, mono / Rajdhani typefaces. *(Canvas ignores CSS vars — fixed in v3.)*
 - **Export** — composited PNG, HUD-only alpha PNG, and per-layer PNG sequences (box / geometry / bars / tags / scan) with transparent background.
 

@@ -33,6 +33,11 @@
   .row label{font-size:11px;color:var(--txt2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .row input[type=range]{flex:1.3}
   .row .val{font-size:10px;color:var(--txt);min-width:32px;text-align:right;font-variant-numeric:tabular-nums}
+  /* numeric value inputs (auto-generated from .val spans) */
+  input.val{width:46px;flex:none;background:var(--panel2);border:1px solid var(--line);border-radius:4px;color:var(--txt);font-family:var(--mono);font-size:10px;text-align:right;padding:3px 5px;-moz-appearance:textfield}
+  input.val::-webkit-outer-spin-button,input.val::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  input.val:focus{outline:none;border-color:var(--accent)}
+  select.psel{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:5px;padding:6px 7px;font-size:11px;font-family:var(--mono);cursor:pointer;margin-bottom:6px}
   /* refined range sliders */
   input[type=range]{-webkit-appearance:none;appearance:none;background:transparent;cursor:pointer;height:14px;margin:0}
   input[type=range]::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:var(--line)}
@@ -95,6 +100,22 @@
     <div class="logo"><span class="dot"></span> HUD STUDIO <span class="ver">v3.0</span></div>
     <div class="sub">Ben · REBA 2026. Procedural sci-fi HUD compositor. Layered alpha export for AE.</div>
 
+    <div class="sec"><h3>Presets <span class="chev">▾</span></h3><div class="body">
+      <select class="psel" id="presetList"><option value="">— select preset —</option></select>
+      <div class="btnrow">
+        <button class="btn sm" id="loadPreset">load</button>
+        <button class="btn sm danger" id="delPreset">delete</button>
+      </div>
+      <div class="row" style="margin-top:8px"><input type="text" id="presetName" placeholder="preset name"></div>
+      <button class="btn sm primary" id="savePreset">⊕ save current as preset</button>
+      <div class="btnrow" style="margin-top:6px">
+        <button class="btn sm" id="exportJson">⬇ export .json</button>
+        <button class="btn sm" id="importJson">⬆ import .json</button>
+      </div>
+      <input type="file" id="importFile" accept="application/json,.json" hidden>
+      <div class="hint">Presets are stored in this browser. Export to share a scene as a file.</div>
+    </div></div>
+
     <div class="sec"><h3>Footage <span class="chev">▾</span></h3><div class="body">
       <div class="fileu" id="dropMedia">⬆ drop / click — photo or video</div>
       <input type="file" id="fileMedia" accept="image/*,video/*" hidden>
@@ -139,6 +160,7 @@
       <div class="row"><label>inner padding</label><input type="range" id="tagPad" min="10" max="48" value="22"><span class="val" id="tagPadV">22</span></div>
       <div class="row"><label>font size</label><input type="range" id="tagFont" min="16" max="44" value="26"><span class="val" id="tagFontV">26</span></div>
       <div class="row"><label>corner radius</label><input type="range" id="tagRadius" min="0" max="32" value="14"><span class="val" id="tagRadiusV">14</span></div>
+      <div class="row"><label>connector length</label><input type="range" id="connLen" min="12" max="400" value="46"><span class="val" id="connLenV">46</span></div>
       <div class="row"><label>number anim</label></div>
       <div class="seg" id="numAnimSeg">
         <button data-v="off" class="sel">off</button>
@@ -279,7 +301,7 @@ const S={
   subject:'TARGET: BENEFIT LEADER',
   dur:8,fps:25,
   // data tags — global layout + number animation
-  tagPad:22,tagFont:26,tagRadius:14,numAnim:'off',numAnimDur:3,
+  tagPad:22,tagFont:26,tagRadius:14,numAnim:'off',numAnimDur:3,connLen:46,
   tags:[
     {label:'WORKLOAD',value:'CRITICAL',good:'MANAGED'},
     {label:'OPEN ENROLMENT',value:'2 DAYS',good:'SORTED'},
@@ -519,8 +541,9 @@ function draw(alphaOnly,layerFilter){
       const ty=baseY+ay,txx=tx;
       const anchorY=lerp(g.cy-g.bh*0.3,g.cy+g.bh*0.3,n>1?i/(n-1):0.5);
       if(S.el.connectors&&show('connectors')){
+        const elbowX=txx-S.connLen;
         ctx.strokeStyle=hexA(A,0.7);ctx.lineWidth=lw*0.7;
-        ctx.beginPath();ctx.moveTo(anchorX,anchorY);ctx.lineTo(txx-46,anchorY);ctx.lineTo(txx-12,ty+th/2);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(anchorX,anchorY);ctx.lineTo(elbowX,anchorY);ctx.lineTo(txx-12,ty+th/2);ctx.stroke();
         ctx.fillStyle=A;ctx.beginPath();ctx.arc(anchorX,anchorY,4,0,7);ctx.fill();
         ctx.beginPath();ctx.arc(txx-12,ty+th/2,3,0,7);ctx.fill();
       }
@@ -598,19 +621,35 @@ function buildKfUI(){
   });
   wrap.querySelectorAll('input').forEach(inp=>inp.addEventListener('input',e=>{
     const i=+e.target.dataset.i,key=e.target.dataset.k;S.hpKeys[i][key]=parseFloat(e.target.value)||0;
-    if(key==='v')e.target.nextElementSibling.textContent=Math.round(e.target.value);
+    if(key==='v')setOut(e.target.nextElementSibling,Math.round(e.target.value));
   }));
   wrap.querySelectorAll('.x').forEach(x=>x.addEventListener('click',()=>{if(S.hpKeys.length>1){S.hpKeys.splice(+x.dataset.del,1);buildKfUI();}}));
+  numify(wrap);
 }
 buildKfUI();
 document.getElementById('addKf').addEventListener('click',()=>{const last=S.hpKeys[S.hpKeys.length-1];S.hpKeys.push({t:Math.min(S.dur,(last?last.t:0)+1),v:50});buildKfUI();});
 
 // ===== generic binds =====
-function bindRange(id,prop,scale){const el=document.getElementById(id);if(!el)return;el.addEventListener('input',()=>{let v=parseFloat(el.value);if(scale)v*=scale;S[prop]=v;const o=document.getElementById(id+'V');if(o)o.textContent=el.value;});}
+function setOut(o,v){if(!o)return;if(o.tagName==='INPUT')o.value=v;else o.textContent=v;}
+function bindRange(id,prop,scale){const el=document.getElementById(id);if(!el)return;el.addEventListener('input',()=>{let v=parseFloat(el.value);if(scale)v*=scale;S[prop]=v;setOut(document.getElementById(id+'V'),el.value);});}
+// convert every ".val" SPAN that follows a range into a synced number input
+function numify(scope){
+  (scope||document).querySelectorAll('input[type=range]').forEach(r=>{
+    const sib=r.nextElementSibling;
+    if(!sib||sib.tagName!=='SPAN'||!sib.classList.contains('val'))return;
+    const inp=document.createElement('input');
+    inp.type='number';inp.className='val';inp.id=sib.id||'';
+    inp.value=r.value;inp.min=r.min;inp.max=r.max;inp.step=r.step||'1';
+    sib.replaceWith(inp);
+    r.addEventListener('input',()=>{inp.value=r.value;});
+    inp.addEventListener('input',()=>{r.value=inp.value;r.dispatchEvent(new Event('input',{bubbles:true}));});
+    inp.addEventListener('change',()=>{r.value=inp.value;r.dispatchEvent(new Event('input',{bubbles:true}));});
+  });
+}
 ['hp','glitch','scan','glow','lw','subjSize','boxDrift','boxSpeed','boxBreathe','boxRot',
  'boxX','boxY','boxW','boxH','boxCut','boxGlow','boxInner','boxDashLen','boxDashSpd','boxCornerLen',
  'gFrameInset','gFrameLen','gGridSpace','gGridOp','gTickN','gCircN','gRingR',
- 'tagPad','tagFont','tagRadius','numAnimDur'].forEach(k=>bindRange(k,k));
+ 'tagPad','tagFont','tagRadius','numAnimDur','connLen'].forEach(k=>bindRange(k,k));
 bindRange('fontScale','fontScale',0.01);
 bindRange('boxLw','boxLw',0.01);
 // manual HP also adds: when not animating, slider drives hp
@@ -718,6 +757,70 @@ document.getElementById('expSeqLayers').addEventListener('click',()=>renderSeq([
 ]));
 
 updFrames();
+
+// ===== presets =====
+const RANGE_IDS=['hp','glitch','scan','glow','lw','subjSize','boxDrift','boxSpeed','boxBreathe','boxRot',
+ 'boxX','boxY','boxW','boxH','boxCut','boxGlow','boxInner','boxDashLen','boxDashSpd','boxCornerLen',
+ 'gFrameInset','gFrameLen','gGridSpace','gGridOp','gTickN','gCircN','gRingR',
+ 'tagPad','tagFont','tagRadius','numAnimDur','connLen'];
+const EL_TOGGLES=['subject','hp','box','geo','tags','connectors','scan'];
+const S_TOGGLES=['boxDouble','boxDash','boxCorners','boxLabel','g_frame','g_grid','g_ticks','g_circuit','g_ring','hpAnim'];
+function setRange(id,val){const el=document.getElementById(id);if(!el)return;el.value=val;setOut(document.getElementById(id+'V'),el.value);}
+function setSeg(id,v){const seg=document.getElementById(id);if(!seg)return;seg.querySelectorAll('button').forEach(b=>b.classList.toggle('sel',b.dataset.v===String(v)));}
+// push the entire S state back into every control
+function syncUI(){
+  RANGE_IDS.forEach(id=>setRange(id,S[id]));
+  setRange('fontScale',Math.round(S.fontScale*100));
+  setRange('boxLw',Math.round(S.boxLw*100));
+  setRange('rDur',S.dur);setRange('rFps',S.fps);
+  EL_TOGGLES.forEach(k=>{const el=document.getElementById('e_'+k);if(el)el.checked=!!S.el[k];});
+  S_TOGGLES.forEach(k=>{const el=document.getElementById(k);if(el)el.checked=!!S[k];});
+  ['accent','value','green','red'].forEach(k=>{const el=document.getElementById('c_'+k);if(el)el.value=S[k];});
+  document.getElementById('c_glow').value=S.glowColor;
+  setSeg('modeSeg',S.mode);setSeg('boxStyleSeg',S.boxStyle);setSeg('hpEaseSeg',S.hpEase);
+  setSeg('faceSeg',S.face);setSeg('numAnimSeg',S.numAnim);
+  document.getElementById('subjText').value=S.subject;
+  document.getElementById('boxLabelText').value=S.boxLabelText;
+  buildTagUI();buildKfUI();updFrames();
+}
+function getPresets(){try{return JSON.parse(localStorage.getItem('hud_presets')||'{}');}catch(e){return {};}}
+function savePresets(p){try{localStorage.setItem('hud_presets',JSON.stringify(p));}catch(e){}}
+function refreshPresetList(sel){
+  const p=getPresets(),list=document.getElementById('presetList');
+  list.innerHTML='<option value="">— select preset —</option>';
+  Object.keys(p).sort().forEach(name=>{const o=document.createElement('option');o.value=name;o.textContent=name;list.appendChild(o);});
+  if(sel)list.value=sel;
+}
+function snapshot(){return JSON.parse(JSON.stringify(S));} // pure data, no media/DOM
+function applyState(obj){Object.assign(S,obj);syncUI();}
+refreshPresetList();
+document.getElementById('savePreset').addEventListener('click',()=>{
+  const name=(document.getElementById('presetName').value||'').trim();
+  if(!name){document.getElementById('presetName').focus();return;}
+  const p=getPresets();p[name]=snapshot();savePresets(p);refreshPresetList(name);
+  document.getElementById('presetName').value='';
+});
+document.getElementById('loadPreset').addEventListener('click',()=>{
+  const name=document.getElementById('presetList').value;if(!name)return;
+  const p=getPresets();if(p[name])applyState(p[name]);
+});
+document.getElementById('delPreset').addEventListener('click',()=>{
+  const name=document.getElementById('presetList').value;if(!name)return;
+  const p=getPresets();delete p[name];savePresets(p);refreshPresetList();
+});
+document.getElementById('exportJson').addEventListener('click',()=>{
+  const blob=new Blob([JSON.stringify(snapshot(),null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);dl(url,(document.getElementById('presetName').value.trim()||'hud_scene')+'.json');
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
+document.getElementById('importJson').addEventListener('click',()=>document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change',e=>{
+  const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=ev=>{try{applyState(JSON.parse(ev.target.result));}catch(err){alert('Invalid preset JSON');}};
+  r.readAsText(f);e.target.value='';
+});
+
+numify();        // convert all static .val spans into number inputs
 // wait for fonts so canvas text measures correctly, then start
 if(document.fonts&&document.fonts.ready){document.fonts.ready.then(()=>{}).catch(()=>{});}
 tick();
