@@ -68,14 +68,11 @@
   .stage{display:flex;flex-direction:column;background:#000;position:relative}
   .canvaswrap{flex:1;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:repeating-conic-gradient(#1a1a1a 0% 25%,#222 0% 50%) 50%/22px 22px}
   canvas#stage{max-width:100%;max-height:100%;box-shadow:0 0 40px rgba(0,0,0,.6)}
-  canvas#stage.drawing{cursor:crosshair}
   .timeline{height:60px;background:var(--panel);border-top:1px solid var(--line);display:flex;align-items:center;padding:0 16px;gap:13px}
   .play{width:36px;height:36px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;color:#042;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
   .scrub{flex:1;accent-color:var(--accent)}
   .tc{font-size:11px;color:var(--txt2);font-variant-numeric:tabular-nums;min-width:104px}
   .badge{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.5);padding:5px 10px;border-radius:6px;font-size:10px;color:var(--accent);border:1px solid var(--line)}
-  .drawhint{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);padding:7px 14px;border-radius:7px;font-size:11px;color:var(--accent);border:1px solid var(--accent);display:none;box-shadow:0 0 18px rgba(41,235,237,.3)}
-  .drawhint.on{display:block}
   .prog{position:absolute;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;z-index:50}
   .prog.on{display:flex}
   .prog .bar{width:300px;height:6px;background:var(--line);border-radius:3px;overflow:hidden}
@@ -124,7 +121,6 @@
       <label class="toggle"><input type="checkbox" id="e_hp" checked><span class="box"></span><span>HP / vitals bar</span></label>
       <label class="toggle"><input type="checkbox" id="e_box" checked><span class="box"></span><span>tracking box</span></label>
       <label class="toggle"><input type="checkbox" id="e_geo" checked><span class="box"></span><span>supporting geometry</span></label>
-      <label class="toggle"><input type="checkbox" id="e_splines" checked><span class="box"></span><span>splines</span></label>
       <label class="toggle"><input type="checkbox" id="e_tags" checked><span class="box"></span><span>data tags</span></label>
       <label class="toggle"><input type="checkbox" id="e_connectors" checked><span class="box"></span><span>connector lines</span></label>
       <label class="toggle"><input type="checkbox" id="e_scan" checked><span class="box"></span><span>scan overlay</span></label>
@@ -170,7 +166,6 @@
     <div class="canvaswrap">
       <canvas id="stage" width="1920" height="1080"></canvas>
       <div class="badge" id="badge">1920 × 1080</div>
-      <div class="drawhint" id="drawhint">✎ spline mode — click to add points · double-click / Finish to end · Esc cancel</div>
       <div class="prog" id="prog"><div style="color:var(--accent);font-size:13px" id="progT">Rendering…</div><div class="bar"><i id="progBar"></i></div><div style="font-size:10px;color:var(--txt2)" id="progSub"></div></div>
     </div>
     <div class="timeline">
@@ -234,28 +229,6 @@
       <div class="row"><label>ring size</label><input type="range" id="gRingR" min="20" max="200" value="90"><span class="val" id="gRingRV">90</span></div>
     </div></div>
 
-    <div class="sec"><h3>Splines <span class="chev">▾</span></h3><div class="body">
-      <div class="btnrow">
-        <button class="btn sm" id="splineDraw">✎ draw</button>
-        <button class="btn sm" id="splineFinish">finish</button>
-      </div>
-      <div class="btnrow" style="margin-top:6px">
-        <button class="btn sm" id="splineUndo">undo pt</button>
-        <button class="btn sm danger" id="splineClear">clear all</button>
-      </div>
-      <div class="row" style="margin-top:8px"><label>smoothing</label><input type="range" id="splineSmooth" min="0" max="100" value="60"><span class="val" id="splineSmoothV">60</span></div>
-      <div class="row"><label>weight</label><input type="range" id="splineW" min="1" max="8" value="2.5" step="0.5"><span class="val" id="splineWV">2.5</span></div>
-      <label class="toggle"><input type="checkbox" id="splineClose"><span class="box"></span><span>close path</span></label>
-      <label class="toggle"><input type="checkbox" id="splineFlow" checked><span class="box"></span><span>animated flow dash</span></label>
-      <label class="toggle"><input type="checkbox" id="splineNodes" checked><span class="box"></span><span>node dots</span></label>
-      <div class="row"><label>color</label></div>
-      <div class="seg" id="splineColorSeg">
-        <button data-v="accent" class="sel">lines</button>
-        <button data-v="value">values</button>
-        <button data-v="green">good</button>
-      </div>
-      <div class="hint" id="splineInfo">0 splines.</div>
-    </div></div>
   </aside>
 </div>
 
@@ -279,12 +252,10 @@ const S={
   g_ticks:true,gTickN:26,
   g_circuit:true,gCircN:6,
   g_ring:false,gRingR:90,
-  // splines
-  splineSmooth:0.6,splineW:2.5,splineClose:false,splineFlow:true,splineNodes:true,splineColor:'accent',
   // hp animation
   hpAnim:true,hpEase:'ease',
   hpKeys:[{t:0,v:94},{t:3,v:38},{t:5.5,v:8},{t:8,v:8}],
-  el:{subject:true,hp:true,box:true,geo:true,splines:true,tags:true,connectors:true,scan:true},
+  el:{subject:true,hp:true,box:true,geo:true,tags:true,connectors:true,scan:true},
   subject:'SUBJECT: BENEFITS MANAGER',
   dur:8,fps:25,
   tags:[
@@ -293,8 +264,6 @@ const S={
     {label:'DEADLINES',value:'6 OVERDUE',cr:14,font:26,anim:'drift',amp:7,good:'ALL CLEAR'}
   ]
 };
-const splines=[]; // {points:[[x,y]], closed, smooth, w, color, flow, nodes}
-let drawing=null; // active spline being drawn
 
 // ---- helpers ----
 function hexA(h,a){const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return`rgba(${r},${g},${b},${a})`;}
@@ -354,27 +323,6 @@ function boxGeom(tt){
   const cx=W*(S.boxX/100)+driftX,cy=H*(S.boxY/100)+driftY;
   const rot=S.boxRot>0?Math.sin(tt*0.5)*S.boxRot/100*0.05:0;
   return {cx,cy,bw,bh,rot};
-}
-
-// ---- catmull-rom spline stroke ----
-function strokeSpline(pts,smooth,closed){
-  if(pts.length<2){if(pts.length===1){ctx.beginPath();ctx.arc(pts[0][0],pts[0][1],2,0,7);ctx.fill();}return;}
-  ctx.beginPath();
-  if(smooth<0.02||pts.length<3){
-    ctx.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);
-    if(closed)ctx.closePath();ctx.stroke();return;
-  }
-  const P=pts.slice();if(closed){P.unshift(pts[pts.length-1]);P.push(pts[0]);P.push(pts[1]);}else{P.unshift(pts[0]);P.push(pts[pts.length-1]);}
-  ctx.moveTo(P[1][0],P[1][1]);
-  for(let i=1;i<P.length-2;i++){
-    const p0=P[i-1],p1=P[i],p2=P[i+1],p3=P[i+2];
-    const k=smooth/6;
-    const c1x=p1[0]+(p2[0]-p0[0])*k,c1y=p1[1]+(p2[1]-p0[1])*k;
-    const c2x=p2[0]-(p3[0]-p1[0])*k,c2y=p2[1]-(p3[1]-p1[1])*k;
-    ctx.bezierCurveTo(c1x,c1y,c2x,c2y,p2[0],p2[1]);
-  }
-  if(closed)ctx.closePath();
-  ctx.stroke();
 }
 
 function draw(alphaOnly,layerFilter){
@@ -502,22 +450,6 @@ function draw(alphaOnly,layerFilter){
       ctx.fillStyle='#042';ctx.textAlign='left';ctx.fillText(S.boxLabelText,lx+10,ly-13);
     }
     ctx.restore();ctx.globalAlpha=1-flick;
-  }
-
-  // ===== SPLINES =====
-  if(S.el.splines&&show('splines')){
-    const allSplines=drawing?splines.concat([drawing]):splines;
-    allSplines.forEach(sp=>{
-      const col=S[sp.color]||A;
-      ctx.strokeStyle=col;ctx.lineWidth=sp.w;ctx.lineJoin='round';ctx.lineCap='round';
-      setGlow(true,S.glow,col);
-      if(sp.flow&&sp.points.length>1){ctx.setLineDash([14,10]);ctx.lineDashOffset=-tt*60;}
-      strokeSpline(sp.points,sp.smooth,sp.closed&&sp!==drawing);
-      ctx.setLineDash([]);
-      setGlow(false);
-      if(sp.nodes){ctx.fillStyle=col;sp.points.forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],sp.w+1.5,0,7);ctx.fill();});}
-    });
-    // active drawing rubber-band feedback dots already drawn via nodes
   }
 
   // ===== SUBJECT =====
@@ -661,8 +593,6 @@ function bindRange(id,prop,scale){const el=document.getElementById(id);if(!el)re
  'gFrameInset','gFrameLen','gGridSpace','gGridOp','gTickN','gCircN','gRingR'].forEach(k=>bindRange(k,k));
 bindRange('fontScale','fontScale',0.01);
 bindRange('boxLw','boxLw',0.01);
-bindRange('splineSmooth','splineSmooth',0.01);
-bindRange('splineW','splineW');
 // manual HP also adds: when not animating, slider drives hp
 document.getElementById('hp').addEventListener('input',e=>{if(!S.hpAnim)S.hp=parseFloat(e.target.value);});
 
@@ -671,9 +601,9 @@ document.getElementById('hp').addEventListener('input',e=>{if(!S.hpAnim)S.hp=par
 document.getElementById('c_glow').addEventListener('input',e=>S.glowColor=e.target.value);
 
 // element toggles
-['subject','hp','box','geo','splines','tags','connectors','scan'].forEach(k=>{document.getElementById('e_'+k).addEventListener('change',e=>S.el[k]=e.target.checked);});
+['subject','hp','box','geo','tags','connectors','scan'].forEach(k=>{document.getElementById('e_'+k).addEventListener('change',e=>S.el[k]=e.target.checked);});
 // right-panel toggles
-['boxDouble','boxDash','boxCorners','boxLabel','g_frame','g_grid','g_ticks','g_circuit','g_ring','hpAnim','splineClose','splineFlow','splineNodes'].forEach(k=>{const el=document.getElementById(k);if(el)el.addEventListener('change',e=>S[k]=e.target.checked);});
+['boxDouble','boxDash','boxCorners','boxLabel','g_frame','g_grid','g_ticks','g_circuit','g_ring','hpAnim'].forEach(k=>{const el=document.getElementById(k);if(el)el.addEventListener('change',e=>S[k]=e.target.checked);});
 document.getElementById('boxLabelText').addEventListener('input',e=>S.boxLabelText=e.target.value);
 
 // seg pickers
@@ -688,7 +618,6 @@ segBind('modeSeg',v=>{S.mode=v;
 segBind('boxStyleSeg',v=>S.boxStyle=parseInt(v));
 segBind('hpEaseSeg',v=>S.hpEase=v);
 segBind('faceSeg',v=>S.face=v);
-segBind('splineColorSeg',v=>S.splineColor=v);
 
 // render params
 bindRange('rDur','dur');bindRange('rFps','fps');
@@ -728,26 +657,6 @@ document.getElementById('play').addEventListener('click',function(){
 });
 document.getElementById('scrub').addEventListener('input',e=>{t=e.target.value/1000*S.dur;setVideoTime();});
 
-// ===== SPLINE drawing =====
-const drawhint=document.getElementById('drawhint');
-function startDraw(){
-  drawing={points:[],closed:S.splineClose,smooth:S.splineSmooth,w:S.splineW,color:S.splineColor,flow:S.splineFlow,nodes:S.splineNodes};
-  cv.classList.add('drawing');drawhint.classList.add('on');
-}
-function finishDraw(){
-  if(drawing&&drawing.points.length>=2){drawing.closed=S.splineClose;splines.push(drawing);}
-  drawing=null;cv.classList.remove('drawing');drawhint.classList.remove('on');updSplineInfo();
-}
-function updSplineInfo(){document.getElementById('splineInfo').textContent=`${splines.length} spline${splines.length===1?'':'s'}${drawing?' (+drawing)':''}.`;}
-function canvasXY(e){const r=cv.getBoundingClientRect();return [Math.round((e.clientX-r.left)/r.width*W),Math.round((e.clientY-r.top)/r.height*H)];}
-cv.addEventListener('click',e=>{if(!drawing)return;drawing.points.push(canvasXY(e));drawing.smooth=S.splineSmooth;drawing.w=S.splineW;drawing.color=S.splineColor;drawing.flow=S.splineFlow;drawing.nodes=S.splineNodes;updSplineInfo();});
-cv.addEventListener('dblclick',e=>{if(drawing)finishDraw();});
-window.addEventListener('keydown',e=>{if(e.key==='Escape'&&drawing){drawing=null;cv.classList.remove('drawing');drawhint.classList.remove('on');updSplineInfo();}});
-document.getElementById('splineDraw').addEventListener('click',startDraw);
-document.getElementById('splineFinish').addEventListener('click',finishDraw);
-document.getElementById('splineUndo').addEventListener('click',()=>{if(drawing&&drawing.points.length)drawing.points.pop();else if(splines.length)splines.pop();updSplineInfo();});
-document.getElementById('splineClear').addEventListener('click',()=>{splines.length=0;drawing=null;cv.classList.remove('drawing');drawhint.classList.remove('on');updSplineInfo();});
-
 // ===== export =====
 function dl(url,name){const a=document.createElement('a');a.href=url;a.download=name;a.click();}
 document.getElementById('expComposite').addEventListener('click',()=>{draw(false);dl(cv.toDataURL('image/png'),'ben_hud_composite.png');});
@@ -782,13 +691,12 @@ document.getElementById('expSeqAll').addEventListener('click',()=>renderSeq(fals
 document.getElementById('expSeqLayers').addEventListener('click',()=>renderSeq(true,[
   {name:'box',filter:['box']},
   {name:'geo',filter:['geo']},
-  {name:'splines',filter:['splines']},
   {name:'bars',filter:['hp','subject']},
   {name:'tags',filter:['tags','connectors']},
   {name:'scan',filter:['scan']}
 ]));
 
-updFrames();updSplineInfo();
+updFrames();
 // wait for fonts so canvas text measures correctly, then start
 if(document.fonts&&document.fonts.ready){document.fonts.ready.then(()=>{}).catch(()=>{});}
 tick();

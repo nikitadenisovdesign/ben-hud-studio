@@ -12,10 +12,9 @@ Built for the Ben · REBA 2026 project.
 - **Tracking box** — 4 shapes (cut-corner / notched / stepped / brackets), full position & size control, drift, breathe, rotate, double-line, marching dashes, corner brackets, label tab, per-element glow.
 - **HP / vitals animation** — keyframe editor (time in seconds → value %) with smooth / linear / step easing and mode presets (critical / recovering / sorted).
 - **Supporting geometry** — outer frame brackets, background grid, ruler edge-ticks, procedural circuit traces with pulsing nodes, rotating reticle ring.
-- **Splines** — draw smooth (Catmull-Rom) splines directly on the canvas with animated flow-dash, node dots, and per-spline color.
 - **Data tags** — add/remove tags with header strip, big value, status dot, animated connector lines (float / pulse / drift).
 - **Typography** — global HUD font scale, mono / Rajdhani typefaces. *(Canvas ignores CSS vars — fixed in v3.)*
-- **Export** — composited PNG, HUD-only alpha PNG, and per-layer PNG sequences (box / geometry / splines / bars / tags / scan) with transparent background.
+- **Export** — composited PNG, HUD-only alpha PNG, and per-layer PNG sequences (box / geometry / bars / tags / scan) with transparent background.
 
 ## Usage
 
