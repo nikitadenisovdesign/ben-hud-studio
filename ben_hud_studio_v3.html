@@ -302,31 +302,31 @@ const W=1920,H=1080;
 let media=null,playing=false,t=0,lastFrame=performance.now();
 
 const S={
-  hp:38,glitch:20,scan:40,glow:14,glowColor:'#29ebed',
+  hp:38,glitch:4,scan:41,glow:14,glowColor:'#29ebed',
   accent:'#29ebed',value:'#ffc72e',green:'#5cdb73',red:'#f2453b',
-  lw:2.5,subjSize:38,fontScale:1.2,face:"'JetBrains Mono',monospace",mode:'critical',margin:110,
+  lw:2.5,subjSize:29,fontScale:1.2,face:"'JetBrains Mono',monospace",mode:'critical',margin:110,
   // tracking box
-  boxStyle:0,boxX:50,boxY:50,boxW:30,boxH:80,boxCut:42,boxLw:1.0,boxGlow:16,
-  boxDrift:8,boxSpeed:60,boxBreathe:30,boxRot:0,
-  boxDouble:true,boxInner:16,boxDash:false,boxDashLen:22,boxDashSpd:60,
-  boxCorners:true,boxCornerLen:46,
+  boxStyle:0,boxX:50,boxY:50,boxW:30,boxH:80,boxCut:86,boxLw:0.72,boxGlow:18,
+  boxDrift:14,boxSpeed:150,boxBreathe:30,boxRot:0,
+  boxDouble:true,boxInner:58,boxDash:true,boxDashLen:20,boxDashSpd:26,
+  boxCorners:true,boxCornerLen:38,
   // supporting geometry
-  g_frame:true,gFrameInset:46,gFrameLen:120,
+  g_frame:true,gFrameInset:46,gFrameLen:149,
   g_grid:false,gGridSpace:80,gGridOp:10,
-  g_ticks:true,gTickN:26,
-  g_circuit:true,gCircN:6,
+  g_ticks:true,gTickN:22,
+  g_circuit:true,gCircN:12,
   // hp animation
   hpAnim:true,hpEase:'ease',
   hpKeys:[{t:0,v:94},{t:3,v:38},{t:5.5,v:8},{t:8,v:8}],
   el:{subject:true,hp:true,box:true,geo:true,tags:true,connectors:true,scan:true},
   subject:'TARGET: BENEFIT LEADER',
-  dur:8,fps:25,
+  dur:5,fps:25,
   // data tags — global layout + number animation
-  tagPad:22,tagFont:26,tagRadius:14,tagW:380,tagH:120,numAnim:'off',numAnimDur:3,connLen:60,
-  blinkVal:false,blinkDot:true,blinkSpeed:3,blinkMin:40,
+  tagPad:29,tagFont:23,tagRadius:14,tagW:355,tagH:141,numAnim:'up',numAnimDur:3,connLen:223,
+  blinkVal:false,blinkDot:true,blinkSpeed:4.5,blinkMin:48,
   tags:[
     {label:'WORKLOAD',value:'CRITICAL'},
-    {label:'OPEN ENROLMENT',value:'2 DAYS'},
+    {label:'OPEN ENROLMENT',value:'14.583'},
     {label:'DEADLINES',value:'6 OVERDUE'}
   ]
 };
@@ -858,6 +858,7 @@ document.getElementById('importFile').addEventListener('change',e=>{
 });
 
 numify();        // convert all static .val spans into number inputs
+syncUI();        // reflect the default state object across every control
 // wait for fonts so canvas text measures correctly, then start
 if(document.fonts&&document.fonts.ready){document.fonts.ready.then(()=>{}).catch(()=>{});}
 tick();
