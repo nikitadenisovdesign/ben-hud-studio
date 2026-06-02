@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ben HUD Studio v2.0</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0e10;--panel:#101619;--panel2:#171f23;--line:#27312f;
+    --txt:#e8eef0;--txt2:#7d8a90;--accent:#29ebed;--accent2:#ffc72e;
+    --green:#5cdb73;--red:#f2453b;--mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);font-family:var(--mono);overflow:hidden;height:100vh;font-size:12px}
+  .app{display:grid;grid-template-columns:340px 1fr;height:100vh}
+  .side{background:var(--panel);border-right:1px solid var(--line);overflow-y:auto;padding:16px}
+  .side::-webkit-scrollbar{width:7px}.side::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+  .logo{font-size:15px;font-weight:700;letter-spacing:.5px;margin-bottom:3px;display:flex;align-items:center;gap:8px}
+  .logo .dot{width:17px;height:12px;background:var(--accent);border-radius:50%/60%}
+  .ver{font-size:10px;color:var(--accent);font-weight:400}
+  .sub{font-size:10px;color:var(--txt2);margin-bottom:16px;line-height:1.5}
+  .sec{margin-bottom:16px;border-top:1px solid var(--line);padding-top:13px}
+  .sec:first-of-type{border-top:none;padding-top:0}
+  .sec h3{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--txt2);margin-bottom:10px;font-weight:700;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+  .sec h3 .chev{transition:.2s}.sec.collapsed h3 .chev{transform:rotate(-90deg)}
+  .sec.collapsed .body{display:none}
+  .row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .row label{font-size:11px;color:var(--txt2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row input[type=range]{flex:1.3;accent-color:var(--accent);height:3px}
+  .row .val{font-size:10px;color:var(--txt);min-width:32px;text-align:right;font-variant-numeric:tabular-nums}
+  .row input[type=text]{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:5px;padding:5px 7px;font-size:11px;width:100%;font-family:var(--mono)}
+  .row input[type=color]{width:28px;height:24px;border:1px solid var(--line);border-radius:5px;background:none;cursor:pointer;padding:2px}
+  .swatchrow{display:flex;gap:6px;flex-wrap:wrap}
+  .swrap{display:flex;flex-direction:column;align-items:center;gap:2px}.swrap span{font-size:8px;color:var(--txt2)}
+  .toggle{display:flex;align-items:center;gap:8px;margin-bottom:7px;cursor:pointer;user-select:none}
+  .toggle input{display:none}
+  .toggle .box{width:32px;height:18px;background:var(--line);border-radius:9px;position:relative;transition:.2s;flex-shrink:0}
+  .toggle .box::after{content:'';position:absolute;width:14px;height:14px;background:var(--txt2);border-radius:50%;top:2px;left:2px;transition:.2s}
+  .toggle input:checked + .box{background:var(--accent)}
+  .toggle input:checked + .box::after{left:16px;background:#052}
+  .toggle span{font-size:11px}
+  .btn{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:7px;padding:9px;font-size:11px;cursor:pointer;width:100%;transition:.15s;font-weight:500;font-family:var(--mono)}
+  .btn:hover{background:var(--accent);color:#042;border-color:var(--accent)}
+  .btn.primary{background:var(--accent);color:#042;border-color:var(--accent);font-weight:700}
+  .btn+.btn{margin-top:6px}
+  .fileu{border:1.5px dashed var(--line);border-radius:7px;padding:13px;text-align:center;font-size:11px;color:var(--txt2);cursor:pointer;transition:.15s}
+  .fileu:hover{border-color:var(--accent);color:var(--accent)}
+  .seg{display:flex;background:var(--panel2);border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:8px}
+  .seg button{flex:1;background:none;border:none;color:var(--txt2);padding:7px 4px;font-size:10px;cursor:pointer;font-family:var(--mono);transition:.15s}
+  .seg button.sel{background:var(--accent);color:#042;font-weight:700}
+  .tagcard{background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:9px;margin-bottom:8px}
+  .tagcard .hd{font-size:10px;color:var(--accent);margin-bottom:7px;font-weight:700}
+  .stage{display:flex;flex-direction:column;background:#000;position:relative}
+  .canvaswrap{flex:1;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:repeating-conic-gradient(#1a1a1a 0% 25%,#222 0% 50%) 50%/22px 22px}
+  canvas#stage{max-width:100%;max-height:100%;box-shadow:0 0 40px rgba(0,0,0,.6)}
+  .timeline{height:60px;background:var(--panel);border-top:1px solid var(--line);display:flex;align-items:center;padding:0 16px;gap:13px}
+  .play{width:36px;height:36px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;color:#042;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .scrub{flex:1;accent-color:var(--accent)}
+  .tc{font-size:11px;color:var(--txt2);font-variant-numeric:tabular-nums;min-width:96px}
+  .badge{position:absolute;top:12px;left:12px;background:rgba(0,0,0,.5);padding:5px 10px;border-radius:6px;font-size:10px;color:var(--accent);border:1px solid var(--line)}
+  .prog{position:absolute;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;z-index:50}
+  .prog.on{display:flex}
+  .prog .bar{width:300px;height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+  .prog .bar i{display:block;height:100%;background:var(--accent);width:0%}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="logo"><span class="dot"></span> HUD STUDIO <span class="ver">v2.0</span></div>
+    <div class="sub">Ben · REBA 2026. Animated sci-fi HUD compositor. Layered alpha export for AE.</div>
+
+    <div class="sec"><h3>Footage <span class="chev">▾</span></h3><div class="body">
+      <div class="fileu" id="dropPhoto">⬆ drop / click to load photo</div>
+      <input type="file" id="filePhoto" accept="image/*" hidden>
+    </div></div>
+
+    <div class="sec"><h3>State <span class="chev">▾</span></h3><div class="body">
+      <div class="seg" id="modeSeg">
+        <button data-v="critical" class="sel">critical</button>
+        <button data-v="recovering">recovering</button>
+        <button data-v="sorted">sorted</button>
+      </div>
+      <div class="row"><label>HP</label><input type="range" id="hp" min="0" max="100" value="38"><span class="val" id="hpV">38</span></div>
+      <div class="row"><label>glitch</label><input type="range" id="glitch" min="0" max="100" value="20"><span class="val" id="glitchV">20</span></div>
+      <div class="row"><label>scan lines</label><input type="range" id="scan" min="0" max="100" value="40"><span class="val" id="scanV">40</span></div>
+      <div class="row"><label>line glow</label><input type="range" id="glow" min="0" max="40" value="12"><span class="val" id="glowV">12</span></div>
+    </div></div>
+
+    <div class="sec"><h3>Tracking box <span class="chev">▾</span></h3><div class="body">
+      <div class="seg" id="boxStyleSeg">
+        <button data-v="0" class="sel">cut-corner</button>
+        <button data-v="1">notched</button>
+        <button data-v="2">stepped</button>
+      </div>
+      <div class="row"><label>drift amount</label><input type="range" id="boxDrift" min="0" max="30" value="8"><span class="val" id="boxDriftV">8</span></div>
+      <div class="row"><label>drift speed</label><input type="range" id="boxSpeed" min="0" max="200" value="60"><span class="val" id="boxSpeedV">60</span></div>
+      <div class="row"><label>breathe</label><input type="range" id="boxBreathe" min="0" max="100" value="30"><span class="val" id="boxBreatheV">30</span></div>
+      <div class="row"><label>rotate °</label><input type="range" id="boxRot" min="0" max="100" value="0"><span class="val" id="boxRotV">0</span></div>
+    </div></div>
+
+    <div class="sec"><h3>Elements <span class="chev">▾</span></h3><div class="body">
+      <label class="toggle"><input type="checkbox" id="e_subject" checked><span class="box"></span><span>subject label</span></label>
+      <label class="toggle"><input type="checkbox" id="e_hp" checked><span class="box"></span><span>HP bar</span></label>
+      <label class="toggle"><input type="checkbox" id="e_box" checked><span class="box"></span><span>tracking box</span></label>
+      <label class="toggle"><input type="checkbox" id="e_tags" checked><span class="box"></span><span>data tags</span></label>
+      <label class="toggle"><input type="checkbox" id="e_connectors" checked><span class="box"></span><span>connector lines</span></label>
+      <label class="toggle"><input type="checkbox" id="e_scan" checked><span class="box"></span><span>scan overlay</span></label>
+    </div></div>
+
+    <div class="sec"><h3>Tags <span class="chev">▾</span></h3><div class="body" id="tagsBody"></div></div>
+
+    <div class="sec"><h3>Global style <span class="chev">▾</span></h3><div class="body">
+      <div class="swatchrow" style="margin-bottom:10px">
+        <div class="swrap"><input type="color" id="c_accent" value="#29ebed"><span>lines</span></div>
+        <div class="swrap"><input type="color" id="c_value" value="#ffc72e"><span>values</span></div>
+        <div class="swrap"><input type="color" id="c_green" value="#5cdb73"><span>good</span></div>
+        <div class="swrap"><input type="color" id="c_red" value="#f2453b"><span>bad</span></div>
+      </div>
+      <div class="row"><label>line weight</label><input type="range" id="lw" min="1" max="8" value="2.5" step="0.5"><span class="val" id="lwV">2.5</span></div>
+      <div class="row"><label>subject size</label><input type="range" id="subjSize" min="20" max="60" value="34"><span class="val" id="subjSizeV">34</span></div>
+    </div></div>
+
+    <div class="sec"><h3>Render <span class="chev">▾</span></h3><div class="body">
+      <div class="row"><label>duration (s)</label><input type="range" id="rDur" min="2" max="20" value="8"><span class="val" id="rDurV">8</span></div>
+      <div class="row"><label>fps</label><input type="range" id="rFps" min="12" max="60" value="25"><span class="val" id="rFpsV">25</span></div>
+      <div class="sub" style="margin:6px 0">Total frames: <span id="frameCount" style="color:var(--accent)">200</span></div>
+      <button class="btn primary" id="expComposite">⬇ PNG — composited</button>
+      <button class="btn" id="expAlpha">⬇ PNG — HUD only (alpha)</button>
+      <button class="btn" id="expSeqAll">⬇ sequence — composited (alpha bg)</button>
+      <button class="btn" id="expSeqLayers">⬇ sequence — HUD layers (alpha)</button>
+      <div class="sub" style="margin-top:8px">Layers export writes separate PNG sequences per element group with transparent bg for AE compositing.</div>
+    </div></div>
+  </aside>
+
+  <main class="stage">
+    <div class="canvaswrap">
+      <canvas id="stage" width="1920" height="1080"></canvas>
+      <div class="badge" id="badge">1920 × 1080</div>
+      <div class="prog" id="prog"><div style="color:var(--accent);font-size:13px" id="progT">Rendering…</div><div class="bar"><i id="progBar"></i></div><div style="font-size:10px;color:var(--txt2)" id="progSub"></div></div>
+    </div>
+    <div class="timeline">
+      <button class="play" id="play">▶</button>
+      <input type="range" class="scrub" id="scrub" min="0" max="1000" value="0">
+      <div class="tc" id="tc">00:00 / 08:00</div>
+    </div>
+  </main>
+</div>
+
+<script>
+const cv=document.getElementById('stage'),ctx=cv.getContext('2d');
+const W=1920,H=1080;
+let photo=null,playing=false,t=0,lastFrame=performance.now();
+
+const S={
+  hp:38,glitch:20,scan:40,glow:12,
+  accent:'#29ebed',value:'#ffc72e',green:'#5cdb73',red:'#f2453b',
+  lw:2.5,subjSize:34,mode:'critical',
+  boxStyle:0,boxDrift:8,boxSpeed:60,boxBreathe:30,boxRot:0,
+  el:{subject:true,hp:true,box:true,tags:true,connectors:true,scan:true},
+  subject:'SUBJECT: BENEFITS MANAGER',
+  dur:8,fps:25,
+  tags:[
+    {label:'WORKLOAD',value:'CRITICAL',cr:16,font:26,anim:'float',amp:6,good:'MANAGED'},
+    {label:'OPEN ENROLMENT',value:'2 DAYS',cr:16,font:26,anim:'pulse',amp:5,good:'SORTED'},
+    {label:'DEADLINES',value:'6 OVERDUE',cr:16,font:26,anim:'drift',amp:7,good:'ALL CLEAR'}
+  ]
+};
+
+function hexA(h,a){const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return`rgba(${r},${g},${b},${a})`;}
+function lerp(a,b,t){return a+(b-a)*t;}
+function lerpC(c1,c2,t){const a=[parseInt(c1.slice(1,3),16),parseInt(c1.slice(3,5),16),parseInt(c1.slice(5,7),16)],b=[parseInt(c2.slice(1,3),16),parseInt(c2.slice(3,5),16),parseInt(c2.slice(5,7),16)];return`rgb(${Math.round(lerp(a[0],b[0],t))},${Math.round(lerp(a[1],b[1],t))},${Math.round(lerp(a[2],b[2],t))})`;}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+
+// ===== geometric tracking box paths =====
+function trackingBoxPath(cx,cy,w,h,style,cut){
+  const x=cx-w/2,y=cy-h/2,c=cut;
+  ctx.beginPath();
+  if(style===0){ // cut-corner octagon-ish
+    ctx.moveTo(x+c,y);ctx.lineTo(x+w-c,y);ctx.lineTo(x+w,y+c);
+    ctx.lineTo(x+w,y+h-c);ctx.lineTo(x+w-c,y+h);ctx.lineTo(x+c,y+h);
+    ctx.lineTo(x,y+h-c);ctx.lineTo(x,y+c);ctx.closePath();
+  }else if(style===1){ // notched (tabs mid-edge)
+    const n=c*0.6;
+    ctx.moveTo(x+c,y);
+    ctx.lineTo(x+w/2-n,y);ctx.lineTo(x+w/2,y-n);ctx.lineTo(x+w/2+n,y); // top notch
+    ctx.lineTo(x+w-c,y);ctx.lineTo(x+w,y+c);
+    ctx.lineTo(x+w,y+h/2-n);ctx.lineTo(x+w+n,y+h/2);ctx.lineTo(x+w,y+h/2+n); // right notch
+    ctx.lineTo(x+w,y+h-c);ctx.lineTo(x+w-c,y+h);
+    ctx.lineTo(x+c,y+h);ctx.lineTo(x,y+h-c);
+    ctx.lineTo(x,y+c);ctx.closePath();
+  }else{ // stepped
+    const s=c*0.5;
+    ctx.moveTo(x+c,y);ctx.lineTo(x+w-c,y);
+    ctx.lineTo(x+w-c,y+s);ctx.lineTo(x+w,y+s);ctx.lineTo(x+w,y+c);
+    ctx.lineTo(x+w,y+h-c);ctx.lineTo(x+w-s,y+h-c);ctx.lineTo(x+w-s,y+h);ctx.lineTo(x+w-c,y+h);
+    ctx.lineTo(x+c,y+h);ctx.lineTo(x+c,y+h-s);ctx.lineTo(x,y+h-s);ctx.lineTo(x,y+h-c);
+    ctx.lineTo(x,y+c);ctx.lineTo(x+s,y+c);ctx.lineTo(x+s,y);ctx.closePath();
+  }
+}
+
+function setGlow(on){if(on&&S.glow>0){ctx.shadowColor=S.accent;ctx.shadowBlur=S.glow;}else{ctx.shadowBlur=0;}}
+
+function draw(alphaOnly,layerFilter){
+  ctx.clearRect(0,0,W,H);
+  const show=k=> (!layerFilter||layerFilter.includes(k));
+  if(!alphaOnly&&photo){
+    const ar=photo.width/photo.height,car=W/H;let dw,dh,dx,dy;
+    if(ar>car){dh=H;dw=H*ar;dx=(W-dw)/2;dy=0;}else{dw=W;dh=W/ar;dx=0;dy=(H-dh)/2;}
+    ctx.drawImage(photo,dx,dy,dw,dh);
+  }else if(!alphaOnly){ctx.fillStyle='#1a1f22';ctx.fillRect(0,0,W,H);ctx.fillStyle='#3a4449';ctx.font='28px var(--mono)';ctx.textAlign='center';ctx.fillText('Load a photo to composite',W/2,H/2);ctx.textAlign='left';}
+
+  const flick=S.glitch>0?(Math.random()*S.glitch/100*0.3):0;
+  ctx.globalAlpha=1-flick;
+  const A=S.accent,V=S.value,lw=S.lw;
+  const tt=t;
+
+  // SCAN
+  if(S.el.scan&&show('scan')&&S.scan>0){
+    ctx.save();const sx=W*0.34,sy=H*0.05,sw=W*0.32,sh=H*0.92;
+    ctx.beginPath();ctx.rect(sx,sy,sw,sh);ctx.clip();
+    ctx.globalAlpha=(1-flick)*S.scan/100*0.5;ctx.strokeStyle=A;ctx.lineWidth=1;
+    const off=(tt*20)%4;
+    for(let y=sy-off;y<sy+sh;y+=4){ctx.beginPath();ctx.moveTo(sx,y);ctx.lineTo(sx+sw,y);ctx.stroke();}
+    ctx.restore();ctx.globalAlpha=1-flick;
+  }
+
+  // TRACKING BOX (animated geometric)
+  if(S.el.box&&show('box')){
+    const breathe=1+ (S.boxBreathe/100)*0.04*Math.sin(tt*2);
+    const driftX=(S.boxDrift)*Math.sin(tt*S.boxSpeed/100);
+    const driftY=(S.boxDrift)*Math.cos(tt*S.boxSpeed/130);
+    const bw=W*0.30*breathe,bh=H*0.80*breathe;
+    const cx=W*0.50+driftX,cy=H*0.50+driftY;
+    ctx.save();
+    if(S.boxRot>0){ctx.translate(cx,cy);ctx.rotate(Math.sin(tt*0.5)*S.boxRot/100*0.05);ctx.translate(-cx,-cy);}
+    setGlow(true);
+    ctx.strokeStyle=A;ctx.lineWidth=lw;ctx.lineJoin='round';
+    trackingBoxPath(cx,cy,bw,bh,S.boxStyle,42);ctx.stroke();
+    // inner accent ticks at corners
+    ctx.lineWidth=lw*0.7;ctx.globalAlpha=(1-flick)*0.6;
+    trackingBoxPath(cx,cy,bw-16,bh-16,S.boxStyle,36);ctx.stroke();
+    setGlow(false);ctx.restore();ctx.globalAlpha=1-flick;
+  }
+
+  // SUBJECT
+  if(S.el.subject&&show('subject')){
+    setGlow(true);ctx.fillStyle=A;ctx.font=`700 ${Math.round(S.subjSize)}px var(--mono)`;ctx.textAlign='left';
+    ctx.fillText(S.subject,70,80);setGlow(false);
+  }
+
+  // HP BAR
+  if(S.el.hp&&show('hp')){
+    const x=90,y=180,w=46,h=720;
+    setGlow(true);ctx.strokeStyle=A;ctx.lineWidth=lw;rr(x,y,w,h,8);ctx.stroke();setGlow(false);
+    const col=lerpC(S.red,S.green,S.hp/100);ctx.fillStyle=col;
+    const fillH=(h-8)*(S.hp/100);const segH=14,gap=4;let yy=y+h-4-segH,drawn=0;
+    while(drawn<fillH&&yy>y){rr(x+4,yy,w-8,segH,3);ctx.fill();yy-=(segH+gap);drawn+=(segH+gap);}
+    ctx.fillStyle=A;ctx.font=`700 ${Math.round(30)}px var(--mono)`;ctx.fillText('HP',x,y-40);
+    ctx.fillStyle=V;ctx.fillText(Math.round(S.hp)+'%',x,y-12);
+  }
+
+  // DATA TAGS (animated)
+  if(S.el.tags&&show('tags')){
+    const tx=1480,tw=370;const tys=[H*0.40,H*0.57,H*0.75];
+    const anchors=[[W*0.62,H*0.40],[W*0.63,H*0.54],[W*0.60,H*0.70]];
+    S.tags.forEach((tag,i)=>{
+      // per-tag animation offset
+      let ax=0,ay=0;const ph=i*1.3;
+      if(tag.anim==='float'){ay=Math.sin(tt*1.5+ph)*tag.amp;}
+      else if(tag.anim==='pulse'){const p=1+Math.sin(tt*2+ph)*0.02;ax=0;ay=0;tag._scale=p;}
+      else if(tag.anim==='drift'){ax=Math.sin(tt*0.8+ph)*tag.amp;ay=Math.cos(tt*1.1+ph)*tag.amp*0.6;}
+      const ty=tys[i]+ay,txx=tx+ax;
+      const th=tag.font*2.6+40;
+      if(S.el.connectors&&show('connectors')){
+        ctx.strokeStyle=hexA(A,0.7);ctx.lineWidth=lw*0.7;
+        ctx.beginPath();ctx.moveTo(anchors[i][0],anchors[i][1]);ctx.lineTo(txx-40,anchors[i][1]);ctx.lineTo(txx-8,ty+th/2);ctx.stroke();
+        ctx.fillStyle=A;ctx.beginPath();ctx.arc(anchors[i][0],anchors[i][1],4,0,7);ctx.fill();
+      }
+      ctx.save();
+      if(tag._scale){ctx.translate(txx+tw/2,ty+th/2);ctx.scale(tag._scale,tag._scale);ctx.translate(-(txx+tw/2),-(ty+th/2));}
+      setGlow(true);
+      ctx.fillStyle='rgba(12,18,20,0.82)';rr(txx,ty,tw,th,tag.cr);ctx.fill();
+      ctx.strokeStyle=A;ctx.lineWidth=lw;rr(txx,ty,tw,th,tag.cr);ctx.stroke();
+      setGlow(false);
+      ctx.textAlign='left';
+      ctx.fillStyle=A;ctx.font=`700 ${Math.round(tag.font)}px var(--mono)`;
+      ctx.fillText(tag.label+':',txx+24,ty+tag.font+16);
+      const val=(S.mode==='sorted')?tag.good:tag.value;
+      ctx.fillStyle=(S.mode==='sorted')?S.green:V;ctx.font=`700 ${Math.round(tag.font*1.45)}px var(--mono)`;
+      ctx.fillText(val,txx+24,ty+tag.font*2.4+16);
+      ctx.restore();
+    });
+  }
+  ctx.globalAlpha=1;ctx.shadowBlur=0;
+}
+
+function applyHPCurve(){if(t<3)S.hp=lerp(94,38,t/3);else if(t<5.5)S.hp=lerp(38,4,(t-3)/2.5);else S.hp=4;}
+
+function tick(){
+  const now=performance.now();const dt=(now-lastFrame)/1000;lastFrame=now;
+  if(playing){t+=dt;if(t>S.dur)t=0;
+    if(S.mode==='critical')applyHPCurve();
+    document.getElementById('hp').value=Math.round(S.hp);document.getElementById('hpV').textContent=Math.round(S.hp);
+    document.getElementById('scrub').value=Math.round(t/S.dur*1000);
+    const cs=Math.floor(t),ms=Math.floor((t%1)*S.fps);
+    document.getElementById('tc').textContent=`${String(cs).padStart(2,'0')}:${String(ms).padStart(2,'0')} / ${String(S.dur).padStart(2,'0')}:00`;
+  }
+  draw(false);requestAnimationFrame(tick);
+}
+
+// ===== build tag controls =====
+function buildTagUI(){
+  const body=document.getElementById('tagsBody');body.innerHTML='';
+  S.tags.forEach((tag,i)=>{
+    const c=document.createElement('div');c.className='tagcard';
+    c.innerHTML=`<div class="hd">TAG ${i+1}</div>
+      <div class="row"><input type="text" value="${tag.label}" data-f="label" data-i="${i}" placeholder="label"></div>
+      <div class="row"><input type="text" value="${tag.value}" data-f="value" data-i="${i}" placeholder="value"></div>
+      <div class="row"><label>anim</label></div>
+      <div class="seg tagAnim" data-i="${i}">
+        <button data-v="float" class="${tag.anim==='float'?'sel':''}">float</button>
+        <button data-v="pulse" class="${tag.anim==='pulse'?'sel':''}">pulse</button>
+        <button data-v="drift" class="${tag.anim==='drift'?'sel':''}">drift</button>
+        <button data-v="none" class="${tag.anim==='none'?'sel':''}">none</button>
+      </div>
+      <div class="row"><label>amp</label><input type="range" min="0" max="20" value="${tag.amp}" data-f="amp" data-i="${i}"><span class="val">${tag.amp}</span></div>
+      <div class="row"><label>radius</label><input type="range" min="0" max="40" value="${tag.cr}" data-f="cr" data-i="${i}"><span class="val">${tag.cr}</span></div>
+      <div class="row"><label>font</label><input type="range" min="16" max="44" value="${tag.font}" data-f="font" data-i="${i}"><span class="val">${tag.font}</span></div>`;
+    body.appendChild(c);
+  });
+  body.querySelectorAll('input[type=text]').forEach(inp=>inp.addEventListener('input',e=>{S.tags[+e.target.dataset.i][e.target.dataset.f]=e.target.value;}));
+  body.querySelectorAll('input[type=range]').forEach(inp=>inp.addEventListener('input',e=>{S.tags[+e.target.dataset.i][e.target.dataset.f]=parseFloat(e.target.value);e.target.nextElementSibling.textContent=e.target.value;}));
+  body.querySelectorAll('.tagAnim').forEach(seg=>{seg.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{seg.querySelectorAll('button').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');S.tags[+seg.dataset.i].anim=b.dataset.v;}));});
+}
+buildTagUI();
+
+// ===== generic binds =====
+function bindRange(id,prop,scale){const el=document.getElementById(id);el.addEventListener('input',()=>{let v=parseFloat(el.value);if(scale)v*=scale;S[prop]=v;const o=document.getElementById(id+'V');if(o)o.textContent=el.value;});}
+['hp','glitch','scan','glow','lw','subjSize','boxDrift','boxSpeed','boxBreathe','boxRot'].forEach(k=>bindRange(k,k));
+['accent','value','green','red'].forEach(k=>{const el=document.getElementById('c_'+k);el.addEventListener('input',()=>S[k]=el.value);});
+['subject','hp','box','tags','connectors','scan'].forEach(k=>{document.getElementById('e_'+k).addEventListener('change',e=>S.el[k]=e.target.checked);});
+document.getElementById('subjSize').addEventListener('input',e=>S.subjSize=parseFloat(e.target.value));
+
+// seg pickers
+function segBind(id,cb){const seg=document.getElementById(id);seg.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{seg.querySelectorAll('button').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');cb(b.dataset.v);}));}
+segBind('modeSeg',v=>{S.mode=v;if(v==='sorted'){S.hp=94;S.glitch=0;document.getElementById('glitch').value=0;document.getElementById('glitchV').textContent=0;}else if(v==='recovering'){S.hp=70;}});
+segBind('boxStyleSeg',v=>S.boxStyle=parseInt(v));
+
+// render params
+bindRange('rDur','dur');bindRange('rFps','fps');
+function updFrames(){document.getElementById('frameCount').textContent=Math.round(S.dur*S.fps);}
+document.getElementById('rDur').addEventListener('input',updFrames);document.getElementById('rFps').addEventListener('input',updFrames);
+
+// collapsible sections
+document.querySelectorAll('.sec h3').forEach(h=>h.addEventListener('click',()=>h.parentElement.classList.toggle('collapsed')));
+
+// photo
+function loadFile(f){const r=new FileReader();r.onload=ev=>{const img=new Image();img.onload=()=>photo=img;img.src=ev.target.result;};r.readAsDataURL(f);}
+document.getElementById('dropPhoto').addEventListener('click',()=>document.getElementById('filePhoto').click());
+document.getElementById('filePhoto').addEventListener('change',e=>{if(e.target.files[0])loadFile(e.target.files[0]);});
+const dz=document.getElementById('dropPhoto');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.style.borderColor=S.accent;});
+dz.addEventListener('dragleave',()=>dz.style.borderColor='');
+dz.addEventListener('drop',e=>{e.preventDefault();dz.style.borderColor='';if(e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);});
+
+// play/scrub
+document.getElementById('play').addEventListener('click',function(){playing=!playing;this.textContent=playing?'⏸':'▶';});
+document.getElementById('scrub').addEventListener('input',e=>{t=e.target.value/1000*S.dur;});
+
+// export
+function dl(url,name){const a=document.createElement('a');a.href=url;a.download=name;a.click();}
+document.getElementById('expComposite').addEventListener('click',()=>{draw(false);dl(cv.toDataURL('image/png'),'ben_hud_composite.png');});
+document.getElementById('expAlpha').addEventListener('click',()=>{draw(true);dl(cv.toDataURL('image/png'),'ben_hud_alpha.png');});
+
+const prog=document.getElementById('prog'),progBar=document.getElementById('progBar'),progSub=document.getElementById('progSub'),progT=document.getElementById('progT');
+async function renderSeq(alphaOnly,layerGroups){
+  const wasPlaying=playing;playing=false;prog.classList.add('on');
+  const total=Math.round(S.dur*S.fps);
+  const groups=layerGroups||[{name:'composite',filter:null}];
+  for(const g of groups){
+    progT.textContent=`Rendering: ${g.name}`;
+    for(let i=0;i<total;i++){
+      t=i/S.fps;if(S.mode==='critical')applyHPCurve();
+      draw(alphaOnly,g.filter);
+      progBar.style.width=(i/total*100)+'%';progSub.textContent=`${g.name} · frame ${i+1}/${total}`;
+      dl(cv.toDataURL('image/png'),`ben_hud_${g.name}_${String(i).padStart(3,'0')}.png`);
+      await new Promise(r=>setTimeout(r,100));
+    }
+  }
+  prog.classList.remove('on');playing=wasPlaying;
+}
+document.getElementById('expSeqAll').addEventListener('click',()=>renderSeq(true,[{name:'composite',filter:null}]));
+document.getElementById('expSeqLayers').addEventListener('click',()=>renderSeq(true,[
+  {name:'box',filter:['box']},
+  {name:'bars',filter:['hp','subject']},
+  {name:'tags',filter:['tags','connectors']},
+  {name:'scan',filter:['scan']}
+]));
+
+updFrames();tick();
+</script>
+</body>
+</html>
