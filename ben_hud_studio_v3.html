@@ -177,6 +177,7 @@
       <div class="row"><label>box height</label><input type="range" id="tagH" min="70" max="240" value="120"><span class="val" id="tagHV">120</span></div>
       <div class="row"><label>inner padding</label><input type="range" id="tagPad" min="10" max="48" value="22"><span class="val" id="tagPadV">22</span></div>
       <div class="row"><label>font size</label><input type="range" id="tagFont" min="16" max="44" value="26"><span class="val" id="tagFontV">26</span></div>
+      <div class="row"><label>label↔value gap</label><input type="range" id="tagGap" min="0" max="100" value="37"><span class="val" id="tagGapV">37</span></div>
       <div class="row"><label>corner radius</label><input type="range" id="tagRadius" min="0" max="32" value="14"><span class="val" id="tagRadiusV">14</span></div>
       <div class="row"><label>distance from edge</label><input type="range" id="connLen" min="40" max="760" value="60"><span class="val" id="connLenV">60</span></div>
       <div class="row"><label>number anim</label></div>
@@ -282,6 +283,8 @@
       <label class="toggle"><input type="checkbox" id="g_frame" checked><span class="box"></span><span>outer frame brackets</span></label>
       <div class="row"><label>frame inset</label><input type="range" id="gFrameInset" min="10" max="120" value="46"><span class="val" id="gFrameInsetV">46</span></div>
       <div class="row"><label>bracket len</label><input type="range" id="gFrameLen" min="20" max="240" value="120"><span class="val" id="gFrameLenV">120</span></div>
+      <div class="row"><label>corner radius</label><input type="range" id="gFrameRadius" min="0" max="140" value="0"><span class="val" id="gFrameRadiusV">0</span></div>
+      <div class="row"><label>lift bottom</label><input type="range" id="gFrameBottom" min="0" max="400" value="0"><span class="val" id="gFrameBottomV">0</span></div>
       <label class="toggle"><input type="checkbox" id="g_grid"><span class="box"></span><span>background grid</span></label>
       <div class="row"><label>grid spacing</label><input type="range" id="gGridSpace" min="30" max="200" value="80"><span class="val" id="gGridSpaceV">80</span></div>
       <div class="row"><label>grid opacity</label><input type="range" id="gGridOp" min="2" max="40" value="10"><span class="val" id="gGridOpV">10</span></div>
@@ -315,7 +318,7 @@ const S={
   boxDouble:true,boxInner:58,boxDash:true,boxDashLen:20,boxDashSpd:26,
   boxCorners:true,boxCornerLen:38,
   // supporting geometry
-  g_frame:true,gFrameInset:46,gFrameLen:149,
+  g_frame:true,gFrameInset:46,gFrameLen:149,gFrameRadius:0,gFrameBottom:0,
   g_grid:false,gGridSpace:80,gGridOp:10,
   g_ticks:true,gTickN:22,
   g_circuit:true,gCircN:12,
@@ -328,7 +331,7 @@ const S={
   // data tags — global layout + number animation
   tagPad:29,tagFont:23,tagRadius:14,tagW:355,tagH:141,numAnim:'up',numAnimDur:3,connLen:223,
   blinkVal:false,blinkDot:true,blinkSpeed:4.5,blinkMin:48,
-  tagGlass:true,glassOpacity:55,glassBlur:18,
+  tagGlass:true,glassOpacity:55,glassBlur:18,tagGap:37,
   tags:[
     {label:'WORKLOAD',value:'CRITICAL'},
     {label:'OPEN ENROLMENT',value:'14.583'},
@@ -373,13 +376,19 @@ function trackingBoxPath(cx,cy,w,h,style,cut){
     ctx.rect(x,y,w,h);
   }
 }
-// corner brackets at the 4 corners of a rect
-function cornerBrackets(cx,cy,w,h,len){
-  const x=cx-w/2,y=cy-h/2;const L=len;
+// corner brackets at the 4 corners of a rect (optional rounded bend)
+function cornerBrackets(cx,cy,w,h,len,radius){
+  const x=cx-w/2,y=cy-h/2,L=len,r=Math.min(radius||0,L);
   const corners=[[x,y,1,1],[x+w,y,-1,1],[x+w,y+h,-1,-1],[x,y+h,1,-1]];
   ctx.beginPath();
   corners.forEach(([px,py,sx,sy])=>{
-    ctx.moveTo(px,py+sy*L);ctx.lineTo(px,py);ctx.lineTo(px+sx*L,py);
+    if(r>0){
+      ctx.moveTo(px,py+sy*L);ctx.lineTo(px,py+sy*r);
+      ctx.arcTo(px,py,px+sx*r,py,r);
+      ctx.lineTo(px+sx*L,py);
+    }else{
+      ctx.moveTo(px,py+sy*L);ctx.lineTo(px,py);ctx.lineTo(px+sx*L,py);
+    }
   });
   ctx.stroke();
 }
@@ -478,7 +487,9 @@ function draw(alphaOnly,layerFilter){
   // ===== OUTER FRAME BRACKETS =====
   if(S.el.geo&&show('geo')&&S.g_frame){
     ctx.save();setGlow(true,S.glow);ctx.strokeStyle=A;ctx.lineWidth=lw;ctx.lineJoin='round';ctx.lineCap='round';
-    cornerBrackets(W/2,H/2,W-S.gFrameInset*2,H-S.gFrameInset*2,S.gFrameLen);
+    // top & bottom insets can differ (lift the bottom brackets up when video is cropped)
+    const fl=S.gFrameInset,fr=W-S.gFrameInset,ftp=S.gFrameInset,fb=H-S.gFrameInset-S.gFrameBottom;
+    cornerBrackets((fl+fr)/2,(ftp+fb)/2,fr-fl,fb-ftp,S.gFrameLen,S.gFrameRadius);
     setGlow(false);ctx.restore();
   }
 
@@ -636,14 +647,16 @@ function draw(alphaOnly,layerFilter){
       }
       ctx.textAlign='left';
       ctx.fillStyle=A;ctx.font=F(700,S.tagFont);
-      ctx.fillText(tag.label,txx+pad,ty+pad*0.5+lblPx*0.8);
+      const labelY=ty+pad*0.5+lblPx*0.8;
+      ctx.fillText(tag.label,txx+pad,labelY);
       // blink alpha (shared by value text & status dot), per-tag phase offset
       const blink=(S.blinkMin/100)+(1-S.blinkMin/100)*Math.abs(Math.sin(tt*S.blinkSpeed+i*0.7));
       const val=animNum(tag.value);
+      const valPx=Math.round(S.tagFont*1.5*S.fontScale);
       ctx.save();
       if(S.blinkVal)ctx.globalAlpha=(1-flick)*blink;
       ctx.fillStyle=sorted?S.green:V;ctx.font=F(700,S.tagFont*1.5);
-      ctx.fillText(val,txx+pad,ty+th-pad);
+      ctx.fillText(val,txx+pad,labelY+lblPx*0.2+S.tagGap+valPx*0.8);   // gap between label & value
       ctx.restore();
       // status dot — blinking
       ctx.save();ctx.globalAlpha=(1-flick)*(S.blinkDot?blink:1);
@@ -735,8 +748,8 @@ function numify(scope){
 }
 ['hp','glitch','scan','glow','lw','subjSize','margin','boxDrift','boxSpeed','boxBreathe','boxRot',
  'boxX','boxY','boxW','boxH','boxCut','boxGlow','boxInner','boxDashLen','boxDashSpd','boxCornerLen',
- 'gFrameInset','gFrameLen','gGridSpace','gGridOp','gTickN','gCircN',
- 'tagPad','tagFont','tagRadius','tagW','tagH','numAnimDur','connLen','blinkSpeed','blinkMin','glassOpacity','glassBlur'].forEach(k=>bindRange(k,k));
+ 'gFrameInset','gFrameLen','gFrameRadius','gFrameBottom','gGridSpace','gGridOp','gTickN','gCircN',
+ 'tagPad','tagFont','tagGap','tagRadius','tagW','tagH','numAnimDur','connLen','blinkSpeed','blinkMin','glassOpacity','glassBlur'].forEach(k=>bindRange(k,k));
 bindRange('fontScale','fontScale',0.01);
 bindRange('boxLw','boxLw',0.01);
 // manual HP also adds: when not animating, slider drives hp
@@ -879,8 +892,8 @@ updFrames();
 // ===== presets =====
 const RANGE_IDS=['hp','glitch','scan','glow','lw','subjSize','margin','boxDrift','boxSpeed','boxBreathe','boxRot',
  'boxX','boxY','boxW','boxH','boxCut','boxGlow','boxInner','boxDashLen','boxDashSpd','boxCornerLen',
- 'gFrameInset','gFrameLen','gGridSpace','gGridOp','gTickN','gCircN',
- 'tagPad','tagFont','tagRadius','tagW','tagH','numAnimDur','connLen','blinkSpeed','blinkMin','glassOpacity','glassBlur'];
+ 'gFrameInset','gFrameLen','gFrameRadius','gFrameBottom','gGridSpace','gGridOp','gTickN','gCircN',
+ 'tagPad','tagFont','tagGap','tagRadius','tagW','tagH','numAnimDur','connLen','blinkSpeed','blinkMin','glassOpacity','glassBlur'];
 const EL_TOGGLES=['subject','hp','box','geo','tags','connectors','scan'];
 const S_TOGGLES=['boxDouble','boxDash','boxCorners','g_frame','g_grid','g_ticks','g_circuit','hpAnim','blinkVal','blinkDot','tagGlass'];
 function setRange(id,val){const el=document.getElementById(id);if(!el)return;el.value=val;setOut(document.getElementById(id+'V'),el.value);}
