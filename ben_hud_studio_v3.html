@@ -149,7 +149,7 @@
 
     <div class="sec"><h3>HP / Vitals animation <span class="chev">▾</span></h3><div class="body">
       <label class="toggle"><input type="checkbox" id="hpAnim" checked><span class="box"></span><span>animate HP over time</span></label>
-      <div class="row"><label>bar height</label><input type="range" id="hpHeight" min="20" max="100" value="78"><span class="val" id="hpHeightV">78</span></div>
+      <div class="row"><label>bar height</label><input type="range" id="hpHeight" min="20" max="100" value="94"><span class="val" id="hpHeightV">94</span></div>
       <div class="row"><label>manual HP</label><input type="range" id="hp" min="0" max="100" value="38"><span class="val" id="hpV">38</span></div>
       <div class="seg" id="hpEaseSeg" style="margin-top:4px">
         <button data-v="ease" class="sel">smooth</button>
@@ -285,7 +285,7 @@
       <div class="row"><label>frame inset</label><input type="range" id="gFrameInset" min="10" max="120" value="46"><span class="val" id="gFrameInsetV">46</span></div>
       <div class="row"><label>bracket len</label><input type="range" id="gFrameLen" min="20" max="240" value="120"><span class="val" id="gFrameLenV">120</span></div>
       <div class="row"><label>corner radius</label><input type="range" id="gFrameRadius" min="0" max="140" value="0"><span class="val" id="gFrameRadiusV">0</span></div>
-      <div class="row"><label>lift bottom</label><input type="range" id="gFrameBottom" min="0" max="400" value="0"><span class="val" id="gFrameBottomV">0</span></div>
+      <div class="row"><label>lift bottom</label><input type="range" id="gFrameBottom" min="0" max="400" value="75"><span class="val" id="gFrameBottomV">75</span></div>
       <label class="toggle"><input type="checkbox" id="g_grid"><span class="box"></span><span>background grid</span></label>
       <div class="row"><label>grid spacing</label><input type="range" id="gGridSpace" min="30" max="200" value="80"><span class="val" id="gGridSpaceV">80</span></div>
       <div class="row"><label>grid opacity</label><input type="range" id="gGridOp" min="2" max="40" value="10"><span class="val" id="gGridOpV">10</span></div>
@@ -319,12 +319,12 @@ const S={
   boxDouble:true,boxInner:58,boxDash:true,boxDashLen:20,boxDashSpd:26,
   boxCorners:true,boxCornerLen:38,
   // supporting geometry
-  g_frame:true,gFrameInset:46,gFrameLen:149,gFrameRadius:0,gFrameBottom:0,
+  g_frame:true,gFrameInset:46,gFrameLen:149,gFrameRadius:0,gFrameBottom:75,
   g_grid:false,gGridSpace:80,gGridOp:10,
   g_ticks:true,gTickN:22,
   g_circuit:true,gCircN:12,
   // hp animation
-  hpAnim:true,hpEase:'ease',hpHeight:78,
+  hpAnim:true,hpEase:'ease',hpHeight:94,
   hpKeys:[{t:0,v:94},{t:3,v:38},{t:5.5,v:8},{t:8,v:8}],
   el:{subject:true,hp:true,box:true,geo:true,tags:true,connectors:true,scan:true},
   subject:'TARGET: BENEFIT LEADER',
