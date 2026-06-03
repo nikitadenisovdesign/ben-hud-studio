@@ -149,6 +149,7 @@
 
     <div class="sec"><h3>HP / Vitals animation <span class="chev">▾</span></h3><div class="body">
       <label class="toggle"><input type="checkbox" id="hpAnim" checked><span class="box"></span><span>animate HP over time</span></label>
+      <div class="row"><label>bar height</label><input type="range" id="hpHeight" min="20" max="100" value="78"><span class="val" id="hpHeightV">78</span></div>
       <div class="row"><label>manual HP</label><input type="range" id="hp" min="0" max="100" value="38"><span class="val" id="hpV">38</span></div>
       <div class="seg" id="hpEaseSeg" style="margin-top:4px">
         <button data-v="ease" class="sel">smooth</button>
@@ -323,7 +324,7 @@ const S={
   g_ticks:true,gTickN:22,
   g_circuit:true,gCircN:12,
   // hp animation
-  hpAnim:true,hpEase:'ease',
+  hpAnim:true,hpEase:'ease',hpHeight:78,
   hpKeys:[{t:0,v:94},{t:3,v:38},{t:5.5,v:8},{t:8,v:8}],
   el:{subject:true,hp:true,box:true,geo:true,tags:true,connectors:true,scan:true},
   subject:'TARGET: BENEFIT LEADER',
@@ -570,7 +571,7 @@ function draw(alphaOnly,layerFilter){
   // ===== HP / VITALS BAR =====
   if(S.el.hp&&show('hp')){
     const labelGap=70;
-    const x=M,y=M+S.subjSize+30,w=46,h=Math.round((H-y-M-labelGap)*0.58);
+    const x=M,y=M+S.subjSize+30,w=46,h=Math.round((H-y-M-labelGap)*(S.hpHeight/100));
     setGlow(true,S.glow);ctx.strokeStyle=A;ctx.lineWidth=lw;rr(x,y,w,h,8);ctx.stroke();setGlow(false);
     const col=lerpC(S.red,S.green,S.hp/100);ctx.fillStyle=col;
     const fillH=(h-8)*(S.hp/100);const segH=14,gap=4;let yy=y+h-4-segH,drawn=0;
@@ -746,7 +747,7 @@ function numify(scope){
     inp.addEventListener('change',()=>{r.value=inp.value;r.dispatchEvent(new Event('input',{bubbles:true}));});
   });
 }
-['hp','glitch','scan','glow','lw','subjSize','margin','boxDrift','boxSpeed','boxBreathe','boxRot',
+['hp','glitch','scan','glow','lw','subjSize','margin','hpHeight','boxDrift','boxSpeed','boxBreathe','boxRot',
  'boxX','boxY','boxW','boxH','boxCut','boxGlow','boxInner','boxDashLen','boxDashSpd','boxCornerLen',
  'gFrameInset','gFrameLen','gFrameRadius','gFrameBottom','gGridSpace','gGridOp','gTickN','gCircN',
  'tagPad','tagFont','tagGap','tagRadius','tagW','tagH','numAnimDur','connLen','blinkSpeed','blinkMin','glassOpacity','glassBlur'].forEach(k=>bindRange(k,k));
@@ -927,7 +928,7 @@ document.getElementById('startRender').addEventListener('click',renderSeq);
 updFrames();
 
 // ===== presets =====
-const RANGE_IDS=['hp','glitch','scan','glow','lw','subjSize','margin','boxDrift','boxSpeed','boxBreathe','boxRot',
+const RANGE_IDS=['hp','glitch','scan','glow','lw','subjSize','margin','hpHeight','boxDrift','boxSpeed','boxBreathe','boxRot',
  'boxX','boxY','boxW','boxH','boxCut','boxGlow','boxInner','boxDashLen','boxDashSpd','boxCornerLen',
  'gFrameInset','gFrameLen','gFrameRadius','gFrameBottom','gGridSpace','gGridOp','gTickN','gCircN',
  'tagPad','tagFont','tagGap','tagRadius','tagW','tagH','numAnimDur','connLen','blinkSpeed','blinkMin','glassOpacity','glassBlur'];
