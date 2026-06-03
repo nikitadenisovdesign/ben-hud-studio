@@ -191,6 +191,10 @@
       <label class="toggle"><input type="checkbox" id="blinkDot" checked><span class="box"></span><span>blink status dot</span></label>
       <div class="row"><label>blink speed</label><input type="range" id="blinkSpeed" min="0.5" max="12" step="0.5" value="3"><span class="val" id="blinkSpeedV">3</span></div>
       <div class="row"><label>blink depth</label><input type="range" id="blinkMin" min="0" max="90" value="40"><span class="val" id="blinkMinV">40</span></div>
+      <label class="toggle" style="margin-top:8px"><input type="checkbox" id="tagGlass" checked><span class="box"></span><span>liquid glass</span></label>
+      <div class="row"><label>glass opacity</label><input type="range" id="glassOpacity" min="0" max="100" value="55"><span class="val" id="glassOpacityV">55</span></div>
+      <div class="row"><label>backdrop blur</label><input type="range" id="glassBlur" min="0" max="40" value="18"><span class="val" id="glassBlurV">18</span></div>
+      <div class="hint">Glass: side-only borders + translucent fill. Backdrop blur shows in preview when footage is loaded; for the alpha render, add a backdrop blur behind the HUD layer in AE.</div>
       <div id="tagsBody"></div>
       <button class="btn sm" id="addTag">+ add tag</button>
     </div></div>
@@ -324,6 +328,7 @@ const S={
   // data tags — global layout + number animation
   tagPad:29,tagFont:23,tagRadius:14,tagW:355,tagH:141,numAnim:'up',numAnimDur:3,connLen:223,
   blinkVal:false,blinkDot:true,blinkSpeed:4.5,blinkMin:48,
+  tagGlass:true,glassOpacity:55,glassBlur:18,
   tags:[
     {label:'WORKLOAD',value:'CRITICAL'},
     {label:'OPEN ENROLMENT',value:'14.583'},
@@ -381,6 +386,21 @@ function cornerBrackets(cx,cy,w,h,len){
 
 function setGlow(on,strength,color){if(on&&(strength||S.glow)>0){ctx.shadowColor=color||S.glowColor;ctx.shadowBlur=(strength!=null?strength:S.glow);}else{ctx.shadowBlur=0;}}
 
+// draw the footage with aspect-fill (cover) mapping — shared by background & glass backdrop
+function drawFootageCover(){
+  if(!media)return;
+  const el=media.el,mw=media.w,mh=media.h;
+  const ar=mw/mh,car=W/H;let dw,dh,dx,dy;
+  if(ar>car){dh=H;dw=H*ar;dx=(W-dw)/2;dy=0;}else{dw=W;dh=W/ar;dx=0;dy=(H-dh)/2;}
+  try{ctx.drawImage(el,dx,dy,dw,dh);}catch(e){}
+}
+// path that strokes only the two vertical sides (with corner curves) — for liquid-glass tags
+function tagSidePath(x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);ctx.arcTo(x,y,x,y+r,r);ctx.lineTo(x,y+h-r);ctx.arcTo(x,y+h,x+r,y+h,r);
+  ctx.moveTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+}
+
 // ---- box geometry (shared so connectors/geo can reference) ----
 function boxGeom(tt){
   const breathe=1+(S.boxBreathe/100)*0.04*Math.sin(tt*2);
@@ -397,10 +417,7 @@ function draw(alphaOnly,layerFilter){
   const show=k=> (!layerFilter||layerFilter.includes(k));
   // ---- footage ----
   if(!alphaOnly&&media){
-    const el=media.el,mw=media.w,mh=media.h;
-    const ar=mw/mh,car=W/H;let dw,dh,dx,dy;
-    if(ar>car){dh=H;dw=H*ar;dx=(W-dw)/2;dy=0;}else{dw=W;dh=W/ar;dx=0;dy=(H-dh)/2;}
-    try{ctx.drawImage(el,dx,dy,dw,dh);}catch(e){}
+    drawFootageCover();
   }else if(!alphaOnly){ctx.fillStyle='#11171a';ctx.fillRect(0,0,W,H);ctx.fillStyle='#3a4449';ctx.font=F(400,28);ctx.textAlign='center';ctx.fillText('Load a photo or video to composite',W/2,H/2);ctx.textAlign='left';}
 
   const flick=S.glitch>0?(Math.random()*S.glitch/100*0.3):0;
@@ -549,12 +566,42 @@ function draw(alphaOnly,layerFilter){
         ctx.fillStyle=A;ctx.beginPath();ctx.arc(anchorX,anchorY,4,0,7);ctx.fill();
         ctx.beginPath();ctx.arc(txx-12,ty+th/2,3,0,7);ctx.fill();
       }
-      setGlow(true,S.glow);
-      ctx.fillStyle='rgba(12,18,20,0.82)';rr(txx,ty,tw,th,S.tagRadius);ctx.fill();
-      ctx.strokeStyle=A;ctx.lineWidth=lw;rr(txx,ty,tw,th,S.tagRadius);ctx.stroke();
-      setGlow(false);
-      // accent header strip
-      ctx.fillStyle=hexA(A,0.18);rr(txx,ty,tw,headH,S.tagRadius);ctx.fill();
+      const r=S.tagRadius;
+      if(S.tagGlass){
+        // ===== LIQUID GLASS =====
+        const op=S.glassOpacity/100;
+        // frosted backdrop: blurred footage clipped to the panel (preview only)
+        if(!alphaOnly&&media&&S.glassBlur>0){
+          ctx.save();rr(txx,ty,tw,th,r);ctx.clip();
+          ctx.filter=`blur(${S.glassBlur}px) saturate(1.3) brightness(0.92)`;
+          drawFootageCover();
+          ctx.filter='none';ctx.restore();
+        }
+        // translucent glass tint with vertical gradient (light top → dark bottom)
+        ctx.save();rr(txx,ty,tw,th,r);
+        const grd=ctx.createLinearGradient(0,ty,0,ty+th);
+        grd.addColorStop(0,hexA(A,0.16*op));
+        grd.addColorStop(0.12,`rgba(16,24,28,${0.34*op})`);
+        grd.addColorStop(1,`rgba(6,11,13,${0.46*op})`);
+        ctx.fillStyle=grd;ctx.fill();
+        // top inner sheen highlight
+        ctx.strokeStyle=hexA('#ffffff',0.10*op);ctx.lineWidth=1;
+        ctx.beginPath();ctx.moveTo(txx+r,ty+1.5);ctx.lineTo(txx+tw-r,ty+1.5);ctx.stroke();
+        ctx.restore();
+        // side-only glowing borders
+        setGlow(true,S.glow);
+        ctx.strokeStyle=A;ctx.lineWidth=lw;ctx.lineCap='round';
+        tagSidePath(txx,ty,tw,th,r);ctx.stroke();ctx.lineCap='butt';
+        setGlow(false);
+      }else{
+        // ===== SOLID PANEL =====
+        setGlow(true,S.glow);
+        ctx.fillStyle='rgba(12,18,20,0.82)';rr(txx,ty,tw,th,r);ctx.fill();
+        ctx.strokeStyle=A;ctx.lineWidth=lw;rr(txx,ty,tw,th,r);ctx.stroke();
+        setGlow(false);
+        // accent header strip
+        ctx.fillStyle=hexA(A,0.18);rr(txx,ty,tw,headH,r);ctx.fill();
+      }
       ctx.textAlign='left';
       ctx.fillStyle=A;ctx.font=F(700,S.tagFont);
       ctx.fillText(tag.label,txx+pad,ty+pad*0.5+lblPx*0.8);
@@ -657,7 +704,7 @@ function numify(scope){
 ['hp','glitch','scan','glow','lw','subjSize','margin','boxDrift','boxSpeed','boxBreathe','boxRot',
  'boxX','boxY','boxW','boxH','boxCut','boxGlow','boxInner','boxDashLen','boxDashSpd','boxCornerLen',
  'gFrameInset','gFrameLen','gGridSpace','gGridOp','gTickN','gCircN',
- 'tagPad','tagFont','tagRadius','tagW','tagH','numAnimDur','connLen','blinkSpeed','blinkMin'].forEach(k=>bindRange(k,k));
+ 'tagPad','tagFont','tagRadius','tagW','tagH','numAnimDur','connLen','blinkSpeed','blinkMin','glassOpacity','glassBlur'].forEach(k=>bindRange(k,k));
 bindRange('fontScale','fontScale',0.01);
 bindRange('boxLw','boxLw',0.01);
 // manual HP also adds: when not animating, slider drives hp
@@ -701,7 +748,7 @@ window.addEventListener('mousedown',e=>{if(cpop.classList.contains('on')&&!cpop.
 // element toggles
 ['subject','hp','box','geo','tags','connectors','scan'].forEach(k=>{document.getElementById('e_'+k).addEventListener('change',e=>S.el[k]=e.target.checked);});
 // right-panel toggles
-['boxDouble','boxDash','boxCorners','g_frame','g_grid','g_ticks','g_circuit','hpAnim','blinkVal','blinkDot'].forEach(k=>{const el=document.getElementById(k);if(el)el.addEventListener('change',e=>S[k]=e.target.checked);});
+['boxDouble','boxDash','boxCorners','g_frame','g_grid','g_ticks','g_circuit','hpAnim','blinkVal','blinkDot','tagGlass'].forEach(k=>{const el=document.getElementById(k);if(el)el.addEventListener('change',e=>S[k]=e.target.checked);});
 document.getElementById('subjText').addEventListener('input',e=>S.subject=e.target.value);
 
 // seg pickers
@@ -801,9 +848,9 @@ updFrames();
 const RANGE_IDS=['hp','glitch','scan','glow','lw','subjSize','margin','boxDrift','boxSpeed','boxBreathe','boxRot',
  'boxX','boxY','boxW','boxH','boxCut','boxGlow','boxInner','boxDashLen','boxDashSpd','boxCornerLen',
  'gFrameInset','gFrameLen','gGridSpace','gGridOp','gTickN','gCircN',
- 'tagPad','tagFont','tagRadius','tagW','tagH','numAnimDur','connLen','blinkSpeed','blinkMin'];
+ 'tagPad','tagFont','tagRadius','tagW','tagH','numAnimDur','connLen','blinkSpeed','blinkMin','glassOpacity','glassBlur'];
 const EL_TOGGLES=['subject','hp','box','geo','tags','connectors','scan'];
-const S_TOGGLES=['boxDouble','boxDash','boxCorners','g_frame','g_grid','g_ticks','g_circuit','hpAnim','blinkVal','blinkDot'];
+const S_TOGGLES=['boxDouble','boxDash','boxCorners','g_frame','g_grid','g_ticks','g_circuit','hpAnim','blinkVal','blinkDot','tagGlass'];
 function setRange(id,val){const el=document.getElementById(id);if(!el)return;el.value=val;setOut(document.getElementById(id+'V'),el.value);}
 function setSeg(id,v){const seg=document.getElementById(id);if(!seg)return;seg.querySelectorAll('button').forEach(b=>b.classList.toggle('sel',b.dataset.v===String(v)));}
 // push the entire S state back into every control

@@ -15,6 +15,7 @@ Built for the Ben · REBA 2026 project.
 - **Presets** — save / load named scenes (stored in-browser) and export / import the full scene as a JSON file.
 - **Editable values** — every slider has a paired number input; type exact values or drag.
 - **Data tags** — add/remove tags (text only), global padding / font / corner radius, adjustable connector length, status dot, and number animation (count up / down) for numeric values.
+- **Liquid glass tags** — optional frosted-glass panel style: translucent gradient fill, side-only glowing borders, and a real blurred backdrop in preview (opacity & blur adjustable).
 - **Typography** — global HUD font scale, mono / Rajdhani typefaces. *(Canvas ignores CSS vars — fixed in v3.)*
 - **Custom color picker** — in-app HSV picker with hex input (no native OS dialog); recolors the HUD live.
 - **Neutral UI** — controls use a neutral grey accent so the cyan stays on the HUD output, not the chrome.
