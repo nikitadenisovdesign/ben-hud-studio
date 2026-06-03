@@ -394,6 +394,20 @@ function drawFootageCover(){
   if(ar>car){dh=H;dw=H*ar;dx=(W-dw)/2;dy=0;}else{dw=W;dh=W/ar;dx=0;dy=(H-dh)/2;}
   try{ctx.drawImage(el,dx,dy,dw,dh);}catch(e){}
 }
+// reliable blur via downscale→upscale (works everywhere; ctx.filter blur is unreliable on video)
+let _blurCv=null,_blurCtx=null;
+function blurredFootage(blurPx){
+  if(!media)return null;
+  const k=Math.max(2,blurPx*0.9);
+  const sw=Math.max(16,Math.round(W/k)),sh=Math.max(9,Math.round(H/k));
+  if(!_blurCv){_blurCv=document.createElement('canvas');_blurCtx=_blurCv.getContext('2d');}
+  if(_blurCv.width!==sw||_blurCv.height!==sh){_blurCv.width=sw;_blurCv.height=sh;}
+  const bx=_blurCtx,el=media.el,mw=media.w,mh=media.h,ar=mw/mh,car=W/H;let dw,dh,dx,dy;
+  if(ar>car){dh=sh;dw=sh*ar;dx=(sw-dw)/2;dy=0;}else{dw=sw;dh=sw/ar;dx=0;dy=(sh-dh)/2;}
+  bx.clearRect(0,0,sw,sh);bx.imageSmoothingEnabled=true;
+  try{bx.drawImage(el,dx,dy,dw,dh);}catch(e){return null;}
+  return _blurCv;
+}
 // path that strokes only the two vertical sides (with corner curves) — for liquid-glass tags
 function tagSidePath(x,y,w,h,r){
   ctx.beginPath();
@@ -572,10 +586,13 @@ function draw(alphaOnly,layerFilter){
         const op=S.glassOpacity/100;
         // frosted backdrop: blurred footage clipped to the panel (preview only)
         if(!alphaOnly&&media&&S.glassBlur>0){
-          ctx.save();rr(txx,ty,tw,th,r);ctx.clip();
-          ctx.filter=`blur(${S.glassBlur}px) saturate(1.3) brightness(0.92)`;
-          drawFootageCover();
-          ctx.filter='none';ctx.restore();
+          const bcv=blurredFootage(S.glassBlur);
+          if(bcv){
+            ctx.save();rr(txx,ty,tw,th,r);ctx.clip();
+            ctx.imageSmoothingEnabled=true;
+            ctx.drawImage(bcv,0,0,bcv.width,bcv.height,0,0,W,H);
+            ctx.restore();
+          }
         }
         // translucent glass tint with vertical gradient (light top → dark bottom)
         ctx.save();rr(txx,ty,tw,th,r);
